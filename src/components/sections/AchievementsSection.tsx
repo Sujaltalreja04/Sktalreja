@@ -103,8 +103,8 @@ const certifications = [
     date: "2024",
     icon: FileText,
     credential: "GenAI-2024",
-    image: "https://cdn.filestackcontent.com/Wvmq7LiQSP69F0LztQGj?policy=eyJjYWxsIjpbInJlYWQiXSwiZXhwaXJ5IjoxNzYyMDkwODQ1LCJwYXRoIjoiLyJ9&signature=b8367097ad9bfb6e1c60180fbe94483e4e29a4a3096f622d8b4b635cba93ced5",
-    link: "https://cdn.filestackcontent.com/Wvmq7LiQSP69F0LztQGj?policy=eyJjYWxsIjpbInJlYWQiXSwiZXhwaXJ5IjoxNzYyMDkwODQ1LCJwYXRoIjoiLyJ9&signature=b8367097ad9bfb6e1c60180fbe94483e4e29a4a3096f622d8b4b635cba93ced5"
+    image: "https://i.ibb.co/JVP5hZ9/1760248288377-3.png",
+    link: "https://ibb.co/JVP5hZ9"
   },
   {
     id: 4,

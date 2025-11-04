@@ -30,6 +30,41 @@ export const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: 'easeOut' }}
         >
+          {/* Profile photo added here */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <motion.div 
+                className="absolute inset-0 rounded-full border-2 border-cyan-400"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.7, 1, 0.7],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <motion.div 
+                className="absolute inset-0 rounded-full border border-cyan-300"
+                animate={{
+                  scale: [1.1, 1.3, 1.1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <img 
+                src="https://i.ibb.co/r27s32Hg/1760248288377-3.png" 
+                alt="Sujal Talreja" 
+                className="relative w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-2 border-gray-300 shadow-2xl z-10"
+              />
+            </div>
+          </div>
+
           <motion.h1
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black mb-3 md:mb-4 bg-gradient-to-r from-gray-400 via-gray-200 to-gray-400 bg-clip-text text-transparent leading-tight"
             style={{ fontFamily: 'Orbitron, sans-serif' }}
