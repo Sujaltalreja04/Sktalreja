@@ -152,6 +152,16 @@ export const AchievementsSection = () => {
     },
   };
 
+  // Badge data for achievements
+  const badgeData = [
+    { id: 1, name: "AI Innovator", icon: "🤖", color: "from-blue-500 to-cyan-500", description: "Created Cybreon - AI-powered robotic brain software" },
+    { id: 2, name: "Hackathon Star", icon: "🏆", color: "from-yellow-500 to-amber-500", description: "Top 5 at Odoo Hackathon 2025 with QuickCourt" },
+    { id: 3, name: "Prompt Engineer", icon: "🧠", color: "from-purple-500 to-pink-500", description: "AI+ Prompt Engineer Level 1™ certified" },
+    { id: 4, name: "Full Stack Dev", icon: "💻", color: "from-green-500 to-emerald-500", description: "Built 12+ freelance web applications" },
+    { id: 5, name: "Data Scientist", icon: "📊", color: "from-indigo-500 to-purple-500", description: "Expert in data analysis and visualization" },
+    { id: 6, name: "Tech Leader", icon: "🚀", color: "from-gray-500 to-gray-300", description: "Led team of 3 junior engineers at Zeex AI" },
+  ];
+
   return (
     <section
       id="achievements"
@@ -199,6 +209,43 @@ export const AchievementsSection = () => {
             >
               ACHIEVEMENTS & CERTIFICATIONS
             </h2>
+          </motion.div>
+
+          {/* Custom Achievement Badges Section */}
+          <motion.div variants={itemVariants} className="mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-gray-100 flex items-center gap-3" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+              <Award className="text-yellow-400" size={28} />
+              Achievement Badges
+              <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/30 to-transparent"></div>
+            </h3>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+              {badgeData.map((badge) => (
+                <motion.div
+                  key={badge.id}
+                  className="relative flex flex-col items-center"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center text-2xl shadow-lg`}>
+                    {badge.icon}
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                  </div>
+                  <span className="mt-2 text-xs text-gray-300 text-center">{badge.name}</span>
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 w-32 text-center">
+                    {badge.description}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="text-center">
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                These badges represent key skills and accomplishments throughout my career. Hover over each badge to see details.
+              </p>
+            </div>
           </motion.div>
 
           <div className="space-y-12">

@@ -221,7 +221,7 @@ export const StorySection = () => {
           </p>
         </motion.div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             key={currentStep}
             initial={{ opacity: 0, x: 50 }}
@@ -230,15 +230,15 @@ export const StorySection = () => {
             className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-2xl p-6 md:p-8"
           >
             <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-              <div className="md:w-1/3 flex justify-center">
+              <div className="md:w-2/5 flex justify-center">
                 <div className="relative">
                   <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 opacity-50 animate-pulse"></div>
-                  <div className="relative w-48 h-48 md:w-56 md:h-56 rounded-xl overflow-hidden border-2 border-gray-700">
+                  <div className="relative w-48 h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-xl overflow-hidden border-2 border-gray-700">
                     {currentStory.image ? (
                       <img 
                         src={currentStory.image} 
                         alt={currentStory.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain bg-gray-900"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
@@ -249,7 +249,7 @@ export const StorySection = () => {
                 </div>
               </div>
 
-              <div className="md:w-2/3">
+              <div className="md:w-3/5">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
                     <IconComponent className="w-5 h-5 text-gray-300" />
