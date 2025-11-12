@@ -17,7 +17,7 @@ const skills = [
   { name: 'Story Telling', level: 88, icon: Cpu, color: '#a0a0a0' },
   { name: 'Leadership', level: 92, icon: Wind, color: '#888888' },
   { name: 'Data Science', level: 60, icon: Database, color: '#989898' },
-  { name: 'WordPress', level: 87, icon: Grid, color: '#787878' },
+  { name: 'Prompt Engineering', level: 87, icon: Grid, color: '#787878' },
   { name: 'English Communication', level: 100, icon: Box, color: '#b0b0b0' },
   { name: 'Entrepreneurship', level: 90, icon: GitBranch, color: '#888888' },
 ];

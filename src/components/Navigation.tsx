@@ -6,10 +6,10 @@ import { useScrollProgress } from '../hooks/useScrollProgress';
 const navLinks = [
   { name: 'HOME', href: '#hero' },
   { name: 'ABOUT', href: '#about' },
+  { name: 'STORY', href: '#story' },
   { name: 'PROJECTS', href: '#projects' },
   { name: 'SKILLS', href: '#skills' },
   { name: 'ACHIEVEMENTS', href: '#achievements' },
-  { name: 'BLOGS', href: '#blogs' },
   { name: 'CONTACT', href: '#contact' },
 ];
 

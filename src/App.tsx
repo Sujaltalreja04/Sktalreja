@@ -8,6 +8,7 @@ const AboutSection = lazy(() => import('./components/sections/AboutSection').the
 const ProjectsSection = lazy(() => import('./components/sections/ProjectsSection').then(module => ({ default: module.ProjectsSection })));
 const SkillsSection = lazy(() => import('./components/sections/SkillsSection').then(module => ({ default: module.SkillsSection })));
 const AchievementsSection = lazy(() => import('./components/sections/AchievementsSection').then(module => ({ default: module.AchievementsSection })));
+const StorySection = lazy(() => import('./components/sections/StorySection').then(module => ({ default: module.StorySection })));
 // const BlogsSection = lazy(() => import('./components/sections/BlogsSection').then(module => ({ default: module.BlogsSection })));
 const ContactSection = lazy(() => import('./components/sections/ContactSection').then(module => ({ default: module.ContactSection })));
 
@@ -29,6 +30,7 @@ function App() {
           </div>
         }>
           <AboutSection />
+          <StorySection />
           <ProjectsSection />
           <SkillsSection />
           <AchievementsSection />
