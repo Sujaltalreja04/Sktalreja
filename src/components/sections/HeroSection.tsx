@@ -143,6 +143,26 @@ export const HeroSection = () => {
             >
               CONTACT ME
             </motion.button>
+
+            <motion.button
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = 'https://drive.google.com/uc?export=download&id=1vLYprjUtDPkr64ynt7bl3xSL2k0r-wEg';
+                link.download = 'Sujal_Talreja_Resume.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="px-6 sm:px-8 py-3 sm:py-4 backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.3)] rounded-xl text-gray-300 font-semibold transition-all text-sm sm:text-base"
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: '0 0 30px rgba(192, 192, 192, 0.4)',
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              DOWNLOAD RESUME
+            </motion.button>
           </motion.div>
         </motion.div>
 
