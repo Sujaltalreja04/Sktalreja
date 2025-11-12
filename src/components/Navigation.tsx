@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Mic, MicOff } from 'lucide-react';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 
 const navLinks = [
@@ -16,8 +16,11 @@ const navLinks = [
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
   const scrollProgress = useScrollProgress();
   const navRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   
   // Use Framer Motion for enhanced scroll effects
   const { scrollY } = useScroll();
@@ -31,6 +34,104 @@ export const Navigation = () => {
     [0, 100],
     ['rgba(192, 192, 192, 0.2)', 'rgba(192, 192, 192, 0.4)']
   );
+
+  // Initialize speech recognition
+  useEffect(() => {
+    // Check if speech recognition is supported
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setSpeechSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      handleVoiceCommand(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleVoiceCommand = (command: string) => {
+    // Define command mappings
+    const commandMap: Record<string, string> = {
+      'home': '#hero',
+      'about': '#about',
+      'story': '#story',
+      'projects': '#projects',
+      'skills': '#skills',
+      'achievements': '#achievements',
+      'certifications': '#achievements',
+      'contact': '#contact',
+      'hackathons': '#achievements',
+      'ai projects': '#projects',
+      'machine learning': '#projects',
+      'full stack': '#projects',
+      'experience': '#about',
+      'journey': '#story',
+      'background': '#about',
+    };
+
+    // Try to find a matching command
+    let targetSection = '';
+    
+    for (const [key, value] of Object.entries(commandMap)) {
+      if (command.includes(key)) {
+        targetSection = value;
+        break;
+      }
+    }
+
+    // If no specific command matched, try to find section names
+    if (!targetSection) {
+      const sectionNames = navLinks.map(link => link.href.substring(1));
+      for (const section of sectionNames) {
+        if (command.includes(section)) {
+          targetSection = `#${section}`;
+          break;
+        }
+      }
+    }
+
+    // Scroll to the target section if found
+    if (targetSection) {
+      scrollToSection(targetSection);
+    }
+  };
+
+  const toggleVoiceRecognition = () => {
+    if (!speechSupported) return;
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,8 +221,25 @@ export const Navigation = () => {
               ))}
             </div>
 
+            {/* Voice Control Button - Always visible now */}
+            {speechSupported && (
+              <motion.button
+                className={`flex items-center justify-center ml-4 w-10 h-10 rounded-full ${
+                  isListening 
+                    ? 'bg-red-500/20 border border-red-500/50' 
+                    : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
+                }`}
+                onClick={toggleVoiceRecognition}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title={isListening ? "Listening... Say a command like 'Show me projects'" : "Voice Control"}
+              >
+                {isListening ? <MicOff size={20} className="text-red-400" /> : <Mic size={20} className="text-gray-400" />}
+              </motion.button>
+            )}
+
             <motion.button
-              className="md:hidden text-gray-300"
+              className="text-gray-300"
               onClick={() => setIsOpen(!isOpen)}
               whileTap={{ scale: 0.9 }}
             >
@@ -154,6 +272,27 @@ export const Navigation = () => {
                   {link.name}
                 </motion.button>
               ))}
+              
+              {/* Mobile Voice Control Button */}
+              {speechSupported && (
+                <motion.button
+                  className={`flex items-center justify-center mt-4 w-full py-3 rounded-lg ${
+                    isListening 
+                      ? 'bg-red-500/20 border border-red-500/50' 
+                      : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
+                  }`}
+                  onClick={toggleVoiceRecognition}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="flex items-center">
+                    {isListening ? <MicOff size={20} className="text-red-400 mr-2" /> : <Mic size={20} className="text-gray-400 mr-2" />}
+                    <span className="text-gray-300">
+                      {isListening ? "Listening..." : "Voice Control"}
+                    </span>
+                  </div>
+                </motion.button>
+              )}
             </div>
           </motion.div>
         </motion.div>

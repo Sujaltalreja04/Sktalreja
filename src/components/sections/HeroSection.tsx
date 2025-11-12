@@ -1,9 +1,14 @@
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
 import { RotatingLogo } from '../3d/RotatingLogo';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Mic, MicOff } from 'lucide-react';
 
 export const HeroSection = () => {
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const recognitionRef = useRef<any>(null);
+  
   const scrollToNext = () => {
     const aboutSection = document.getElementById('about');
     if (aboutSection) {
@@ -12,6 +17,123 @@ export const HeroSection = () => {
         top: targetPosition,
         behavior: 'smooth'
       });
+    }
+  };
+
+  // Initialize speech recognition
+  useEffect(() => {
+    // Check if speech recognition is supported
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setSpeechSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      handleVoiceCommand(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleVoiceCommand = (command: string) => {
+    // Define command mappings
+    const commandMap: Record<string, string> = {
+      'home': '#hero',
+      'about': '#about',
+      'story': '#story',
+      'projects': '#projects',
+      'skills': '#skills',
+      'achievements': '#achievements',
+      'certifications': '#achievements',
+      'contact': '#contact',
+      'hackathons': '#achievements',
+      'ai projects': '#projects',
+      'machine learning': '#projects',
+      'full stack': '#projects',
+      'experience': '#about',
+      'journey': '#story',
+      'background': '#about',
+      'download resume': 'download-resume',
+    };
+
+    // Try to find a matching command
+    let targetAction = '';
+    
+    for (const [key, value] of Object.entries(commandMap)) {
+      if (command.includes(key)) {
+        targetAction = value;
+        break;
+      }
+    }
+
+    // If no specific command matched, try to find section names
+    if (!targetAction) {
+      const sectionNames = ['hero', 'about', 'story', 'projects', 'skills', 'achievements', 'contact'];
+      for (const section of sectionNames) {
+        if (command.includes(section)) {
+          targetAction = `#${section}`;
+          break;
+        }
+      }
+    }
+
+    // Execute the target action
+    if (targetAction) {
+      if (targetAction === 'download-resume') {
+        // Handle resume download
+        const link = document.createElement('a');
+        link.href = 'https://drive.google.com/uc?export=download&id=1vLYprjUtDPkr64ynt7bl3xSL2k0r-wEg';
+        link.download = 'Sujal_Talreja_Resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Scroll to the target section
+        const element = document.querySelector(targetAction);
+        if (element) {
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+  };
+
+  const toggleVoiceRecognition = () => {
+    if (!speechSupported) return;
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
     }
   };
 
@@ -163,6 +285,27 @@ export const HeroSection = () => {
             >
               DOWNLOAD RESUME
             </motion.button>
+
+            {/* Voice Control Button */}
+            {speechSupported && (
+              <motion.button
+                onClick={toggleVoiceRecognition}
+                className={`px-6 sm:px-8 py-3 sm:py-4 backdrop-blur-md border rounded-xl font-semibold transition-all text-sm sm:text-base flex items-center justify-center gap-2 ${
+                  isListening 
+                    ? 'bg-red-500/20 border-red-500/50 text-red-300' 
+                    : 'bg-[rgba(26,26,26,0.7)] border-[rgba(192,192,192,0.3)] text-gray-300'
+                }`}
+                style={{ fontFamily: 'Orbitron, sans-serif' }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: '0 0 30px rgba(192, 192, 192, 0.4)',
+                }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                <span>VOICE MODE</span>
+              </motion.button>
+            )}
           </motion.div>
         </motion.div>
 
