@@ -41,6 +41,25 @@ export const AboutSection = () => {
 
   const experienceItems = [
     {
+      role: 'CTO & Co-founder',
+      company: 'Cybreon',
+      period: 'Present',
+      description: 'Co-founded Cybreon to pioneer advanced AI hardware and software solutions for robotics. Directed all engineering and research efforts, translating the company\'s vision into a disruptive technology architecture.',
+      achievements: [
+        'Pioneered Next-Generation Architecture: Led the overall technology architecture, research, and implementation of a novel Digital Brain system designed to automate robot training',
+        'Innovation & Security Integration: Combined AI innovation with security intelligence to create high-impact, next-generation digital products',
+        'Product Development & Delivery: Managed the product development lifecycle from concept to execution, ensuring the successful delivery of cutting-edge AI-driven solutions'
+      ],
+      skillsGained: ['Entrepreneurship', 'Leadership', 'Product Management', 'AI Hardware Development', 'Strategic Vision'],
+      icon: Zap,
+      techStack: [
+        { name: 'AI/ML', icon: Brain, level: 'Expert' },
+        { name: 'Neuromorphic Chips', icon: Cpu, level: 'Advanced' },
+        { name: 'Robotics', icon: Cpu, level: 'Expert' },
+        { name: 'Security Intelligence', icon: Server, level: 'Advanced' }
+      ]
+    },
+    {
       role: 'Freelance Developer',
       company: 'Independent',
       period: '11+ months',
@@ -101,11 +120,12 @@ export const AboutSection = () => {
 
   // Tech stack evolution data for visualization
   const techEvolution = [
-    { name: 'Python', levels: [80, 90, 95], icon: Code },
-    { name: 'AI/ML', levels: [0, 30, 70], icon: Brain },
-    { name: 'Data Science', levels: [0, 60, 80], icon: Database },
-    { name: 'Web Dev', levels: [60, 80, 90], icon: Globe },
-    { name: 'Cloud', levels: [0, 40, 70], icon: Server },
+    { name: 'Python', levels: [85, 80, 90, 95], icon: Code },
+    { name: 'AI/ML', levels: [95, 40, 0, 30, 70], icon: Brain },
+    { name: 'Data Science', levels: [30, 0, 60, 80], icon: Database },
+    { name: 'Web Dev', levels: [75, 60, 80, 90], icon: Globe },
+    { name: 'Cloud', levels: [20, 0, 40, 70], icon: Server },
+    { name: 'Robotics', levels: [90, 0, 0, 0, 0], icon: Cpu },
   ];
 
   return (
@@ -165,11 +185,11 @@ export const AboutSection = () => {
                 }}
               >
                 <p className="text-gray-300 text-base md:text-lg mb-4 leading-relaxed">
-                  Hi, I'm Sujal Talreja — a passionate AI Engineer and Full-Stack Developer dedicated to building intelligent, data-driven solutions that bridge technology and business impact.
+                  Hi, I'm Sujal Talreja — a passionate AI Engineer, Full-Stack Developer, and Entrepreneur dedicated to building intelligent, data-driven solutions that bridge technology and business impact.
                 </p>
 
                 <p className="text-gray-300 text-base md:text-lg mb-4 leading-relaxed">
-                  I've completed my B.Sc. in Information Technology and am currently pursuing an M.Sc. in Artificial Intelligence & Machine Learning at Ganpat University.
+                  I've completed my B.Sc. in Information Technology and am currently pursuing an M.Sc. in Artificial Intelligence & Machine Learning at Ganpat University. I'm also the CTO & Co-founder of Cybreon, pioneering advanced AI hardware and software solutions for robotics.
                 </p>
 
                 <p className="text-gray-300 text-base md:text-lg leading-relaxed">
