@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion, useTransform, useViewportScroll } from 'framer-motion';
 import { useInView } from '../../hooks/useInView';
 import { useResponsive } from '../../hooks/useResponsive';
-import { Code, Globe, BarChart3, ExternalLink } from 'lucide-react';
+import { Code, Globe, BarChart3, ExternalLink, Video } from 'lucide-react';
+import { VideoModal } from '../VideoModal';
 
 const projects = [
   {
@@ -34,6 +35,7 @@ const projects = [
     image: 'https://i.ibb.co/p6LxhQ7H/Screenshot-2025-11-02-155631.png',
     projectUrl: 'https://sujaltalreja04-google-cloud-hackathon-2025-appmain-pnutz6.streamlit.app/',
     githubUrl: 'https://github.com/Sujaltalreja04/Evolvex-AI-',
+    videoUrl: 'https://www.youtube.com/watch?v=GjT53JZFldg&pp=0gcJCQwKAYcqIYzv',
   },
   {
     title: 'Macro Mind AI',
@@ -71,9 +73,11 @@ const projects = [
 export const ProjectsSection = () => {
   const [ref, isInView] = useInView();
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
   const { scrollY } = useViewportScroll();
   const { isSmallScreen, isMediumScreen } = useResponsive();
-  
+
   // Parallax effect for the section
   const parallaxY = useTransform(scrollY, [0, 1000], [0, 50]);
 
@@ -84,6 +88,16 @@ export const ProjectsSection = () => {
     setFlippedCards(prev =>
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
+  };
+
+  const openVideoModal = (videoUrl: string, title: string) => {
+    setSelectedVideo({ url: videoUrl, title });
+    setVideoModalOpen(true);
+  };
+
+  const closeVideoModal = () => {
+    setVideoModalOpen(false);
+    setTimeout(() => setSelectedVideo(null), 300); // Clear after animation
   };
 
   const containerVariants = {
@@ -110,7 +124,7 @@ export const ProjectsSection = () => {
       id="projects"
       ref={ref}
       className="min-h-screen flex items-center justify-center py-16 md:py-20 relative"
-      style={{ 
+      style={{
         background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)',
         y: parallaxY
       }}
@@ -258,6 +272,25 @@ export const ProjectsSection = () => {
                         <Code className="w-4 h-4" />
                         VIEW CODE
                       </motion.button>
+
+                      {(project as any).videoUrl && (
+                        <motion.button
+                          className="w-full backdrop-blur-md bg-gradient-to-r from-gray-700/20 to-gray-900/20 border border-[rgba(192,192,192,0.3)] rounded-lg px-3 py-2 md:px-4 md:py-3 text-gray-300 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
+                          whileHover={{
+                            scale: 1.05,
+                            boxShadow: '0 0 25px rgba(192, 192, 192, 0.5)',
+                            background: 'linear-gradient(to right, rgba(75, 85, 99, 0.3), rgba(31, 41, 55, 0.3))',
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openVideoModal((project as any).videoUrl, project.title);
+                          }}
+                        >
+                          <Video className="w-4 h-4" />
+                          VIEW VIDEO
+                        </motion.button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -266,6 +299,16 @@ export const ProjectsSection = () => {
           })}
         </motion.div>
       </div>
+
+      {/* Video Modal */}
+      {selectedVideo && (
+        <VideoModal
+          isOpen={videoModalOpen}
+          onClose={closeVideoModal}
+          videoUrl={selectedVideo.url}
+          title={selectedVideo.title}
+        />
+      )}
     </motion.section>
   );
 };
