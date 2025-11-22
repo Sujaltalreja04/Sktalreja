@@ -1,12 +1,11 @@
-import { MetadataRoute } from "next";
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: "https://sktalreja.vercel.app/",
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1.0,
-    }
-  ];
-}
+  <url>
+    <loc>https://sktalreja.vercel.app/</loc>
+    <lastmod>2025-11-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+</urlset>
