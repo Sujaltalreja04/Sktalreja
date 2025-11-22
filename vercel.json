@@ -2,17 +2,18 @@
     "routes": [
         {
             "src": "/sitemap.xml",
+            "dest": "/sitemap.txt",
             "headers": {
-                "Content-Type": "application/xml"
-            },
-            "dest": "/sitemap.xml"
+                "Content-Type": "application/xml",
+                "Cache-Control": "public, max-age=0, must-revalidate"
+            }
         },
         {
             "src": "/robots.txt",
+            "dest": "/robots.txt",
             "headers": {
                 "Content-Type": "text/plain"
-            },
-            "dest": "/robots.txt"
+            }
         }
     ]
 }
