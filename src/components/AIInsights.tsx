@@ -10,11 +10,14 @@ interface VisitorStats {
 }
 
 export const AIInsights = () => {
+    // UPDATE THESE NUMBERS FROM YOUR GOOGLE ANALYTICS DASHBOARD
+    // Go to: https://analytics.google.com/ → Reports → Engagement
+    // Update monthly based on real GA4 data
     const [stats, setStats] = useState<VisitorStats>({
-        totalVisitors: 1247,
-        mostViewedProject: 'InfraSentinel',
-        trendingSkills: ['Computer Vision', 'GenAI', 'PyTorch'],
-        currentViewers: 3,
+        totalVisitors: 847, // ← Update from GA4 "Total Users" (last 30 days)
+        mostViewedProject: 'InfraSentinel', // ← Check GA4 "Pages and screens" report
+        trendingSkills: ['Computer Vision', 'GenAI', 'PyTorch'], // ← Based on project views
+        currentViewers: 2, // ← Simulated (GA4 Realtime shows actual live users)
     });
 
     // Simulate real-time updates
