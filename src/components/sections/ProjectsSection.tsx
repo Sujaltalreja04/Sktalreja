@@ -65,6 +65,7 @@ const projects = [
     image: 'https://i.ibb.co/ccMn3fM0/Screenshot-2025-11-02-164051.png',
     projectUrl: 'https://www.linkedin.com/posts/sujal-kishore-kumar-talreja-65975b216_ai-deepfake-computervision-ugcPost-7325085611252412416-zeLd?utm_source=share&utm_medium=member_desktop&rcm=ACoAADaSluUBOuckqBc1BiJG90rMyKi4JZ5s5vU',
     githubUrl: 'https://github.com/Sujaltalreja04/Ai-Based-Deepfake-Detection-System',
+    videoUrl: 'https://www.youtube.com/watch?v=GZ38WHOjBWQ',
     cardHeight: 'h-[28rem]',
     specialTagLayout: true,
   },
