@@ -1,134 +1,151 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, ThumbsUp, MessageCircle, User, Send } from 'lucide-react';
-import io from 'socket.io-client';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Rocket,
+  GraduationCap,
+  Calendar,
+  TrendingUp,
+  Code,
+  Brain,
+  Zap,
+  Clock,
+  Award,
+  ExternalLink
+} from 'lucide-react';
 
-interface ProjectIdea {
+// Project card interface
+interface ProjectCard {
   id: string;
   title: string;
   description: string;
-  author: string;
-  votes: number;
-  comments: Comment[];
-  createdAt: Date;
-  tags: string[];
+  category: 'project' | 'learning' | 'career';
+  progress: number;
+  priority: 'high' | 'medium' | 'low';
+  techStack: string[];
+  deadline?: string;
+  status: 'in-progress' | 'learning';
+  icon?: any;
+  link?: string;
 }
 
-interface Comment {
-  id: string;
-  author: string;
-  content: string;
-  createdAt: Date;
-}
+// Initial project data based on user's input
+const initialProjects: ProjectCard[] = [
+  // In Progress - Active Projects
+  {
+    id: '1',
+    title: 'InfraSentinel',
+    description: 'AI-Based Infrastructure, Roads & Dams Monitoring System with drone vision, crack detection, and predictive maintenance using YOLOv10 and advanced computer vision',
+    category: 'project',
+    progress: 25,
+    priority: 'high',
+    techStack: ['YOLOv10', 'PyTorch', 'FastAPI', 'Next.js', 'PostgreSQL', 'AWS'],
+    deadline: '2025-06-30',
+    status: 'in-progress',
+    icon: Brain,
+  },
+  {
+    id: '2',
+    title: 'Evolvex AI',
+    description: 'Scaling AI-based career suggestion platform from prototype to production with enhanced features and improved user experience',
+    category: 'project',
+    progress: 60,
+    priority: 'high',
+    techStack: ['Streamlit', 'Llama', 'Gemini', 'XGBoost', 'MongoDB'],
+    deadline: '2025-04-15',
+    status: 'in-progress',
+    icon: Rocket,
+    link: 'https://github.com/Sujaltalreja04/Evolvex-AI-',
+  },
+  // Learning Goals - Current Focus
+  {
+    id: '3',
+    title: 'Cutting-Edge Generative AI',
+    description: 'Mastering latest GenAI technologies including advanced LLMs, multimodal AI, prompt engineering, RAG systems, and AI agents',
+    category: 'learning',
+    progress: 45,
+    priority: 'high',
+    techStack: ['GPT-4', 'Claude', 'Gemini', 'LangChain', 'Vector DBs', 'RAG'],
+    status: 'learning',
+    icon: GraduationCap,
+  },
+];
+
+const columnConfig = [
+  {
+    id: 'in-progress',
+    title: 'In Progress',
+    subtitle: 'Active Development',
+    icon: Rocket,
+    gradient: 'from-orange-600/20 to-orange-800/20',
+    borderColor: 'border-orange-500/30',
+  },
+  {
+    id: 'learning',
+    title: 'Learning',
+    subtitle: 'Skills & Education',
+    icon: GraduationCap,
+    gradient: 'from-purple-600/20 to-purple-800/20',
+    borderColor: 'border-purple-500/30',
+  },
+];
+
+const priorityColors = {
+  high: 'bg-red-500/20 border-red-500/50 text-red-400',
+  medium: 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400',
+  low: 'bg-blue-500/20 border-blue-500/50 text-blue-400',
+};
+
+const categoryIcons = {
+  project: Code,
+  learning: GraduationCap,
+  career: Award,
+};
 
 export const PlanningBoardSection = () => {
-  const [ideas, setIdeas] = useState<ProjectIdea[]>([]);
-  const [newIdea, setNewIdea] = useState({ title: '', description: '', tags: '' });
-  const [selectedIdea, setSelectedIdea] = useState<ProjectIdea | null>(null);
-  const [newComment, setNewComment] = useState('');
-  const [userName, setUserName] = useState('Anonymous');
-  const socketRef = useRef<any>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [projects, setProjects] = useState<ProjectCard[]>(initialProjects);
+  const [draggedCard, setDraggedCard] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'kanban' | 'timeline'>('kanban');
 
-  // Initialize WebSocket connection
-  useEffect(() => {
-    // Connect to WebSocket server
-    socketRef.current = io('http://localhost:3001'); // Connect to our local server
-    
-    socketRef.current.on('connect', () => {
-      console.log('Connected to WebSocket server');
-      setIsConnected(true);
-    });
-    
-    socketRef.current.on('disconnect', () => {
-      console.log('Disconnected from WebSocket server');
-      setIsConnected(false);
-    });
-    
-    // Listen for updates to the ideas list
-    socketRef.current.on('ideasUpdated', (updatedIdeas: ProjectIdea[]) => {
-      setIdeas(updatedIdeas);
-    });
-    
-    // Listen for new ideas
-    socketRef.current.on('ideaAdded', (newIdea: ProjectIdea) => {
-      setIdeas(prev => [newIdea, ...prev]);
-    });
-    
-    // Listen for vote updates
-    socketRef.current.on('ideaVoted', (ideaId: string, votes: number) => {
-      setIdeas(prev => 
-        prev.map(idea => 
-          idea.id === ideaId 
-            ? { ...idea, votes } 
-            : idea
-        )
-      );
-    });
-    
-    // Listen for new comments
-    socketRef.current.on('commentAdded', (ideaId: string, comment: Comment) => {
-      setIdeas(prev => 
-        prev.map(idea => 
-          idea.id === ideaId 
-            ? { ...idea, comments: [...idea.comments, comment] } 
-            : idea
-        )
-      );
-    });
-    
-    // Request initial ideas
-    socketRef.current.emit('getIdeas');
-    
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  const handleAddIdea = () => {
-    if (!newIdea.title.trim() || !newIdea.description.trim()) return;
-    
-    const idea: ProjectIdea = {
-      id: Date.now().toString(),
-      title: newIdea.title,
-      description: newIdea.description,
-      author: userName,
-      votes: 0,
-      comments: [],
-      createdAt: new Date(),
-      tags: newIdea.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-    };
-    
-    // Send new idea via WebSocket
-    socketRef.current?.emit('addIdea', idea);
-    setNewIdea({ title: '', description: '', tags: '' });
+  const handleDragStart = (cardId: string) => {
+    setDraggedCard(cardId);
   };
 
-  const handleVote = (id: string) => {
-    // Send vote via WebSocket
-    socketRef.current?.emit('voteIdea', id);
+  const handleDragEnd = () => {
+    setDraggedCard(null);
   };
 
-  const handleAddComment = () => {
-    if (!selectedIdea || !newComment.trim()) return;
-    
-    const comment: Comment = {
-      id: Date.now().toString(),
-      author: userName,
-      content: newComment,
-      createdAt: new Date()
-    };
-    
-    // Send comment via WebSocket
-    socketRef.current?.emit('addComment', selectedIdea.id, comment);
-    setNewComment('');
+  const handleDrop = (newStatus: ProjectCard['status']) => {
+    if (!draggedCard) return;
+
+    setProjects(prev =>
+      prev.map(project =>
+        project.id === draggedCard
+          ? { ...project, status: newStatus }
+          : project
+      )
+    );
+    setDraggedCard(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const getProjectsByStatus = (status: ProjectCard['status']) => {
+    return projects.filter(p => p.status === status);
+  };
+
+  const calculateOverallProgress = () => {
+    const inProgressProjects = projects.filter(p => p.status === 'in-progress' || p.status === 'learning');
+    if (inProgressProjects.length === 0) return 0;
+    const totalProgress = inProgressProjects.reduce((sum, p) => sum + p.progress, 0);
+    return Math.round(totalProgress / inProgressProjects.length);
   };
 
   return (
-    <section id="planning" className="py-20 px-4 sm:px-6">
-      <div className="container mx-auto max-w-6xl">
+    <section id="planning" className="py-20 px-4 sm:px-6 relative">
+      <div className="container mx-auto max-w-7xl">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -136,282 +153,332 @@ export const PlanningBoardSection = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text text-transparent">
-            Collaborative Project Planning
+          <h2
+            className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-500 bg-clip-text text-transparent"
+            style={{ fontFamily: 'Orbitron, sans-serif' }}
+          >
+            DEVELOPMENT ROADMAP
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Share your project ideas and collaborate with others. Vote on concepts you find interesting 
-            and help shape the future of innovative development.
+          <p className="text-gray-400 max-w-2xl mx-auto mb-8">
+            Interactive project tracker showcasing current work, learning goals, and future vision
           </p>
+
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-orange-500/30 rounded-xl p-4"
+            >
+              <div className="flex items-center justify-center mb-2">
+                <Rocket className="w-5 h-5 text-orange-400 mr-2" />
+                <span className="text-2xl font-bold text-orange-400">
+                  {getProjectsByStatus('in-progress').length}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400">Active Projects</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-purple-500/30 rounded-xl p-4"
+            >
+              <div className="flex items-center justify-center mb-2">
+                <GraduationCap className="w-5 h-5 text-purple-400 mr-2" />
+                <span className="text-2xl font-bold text-purple-400">
+                  {getProjectsByStatus('learning').length}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400">Learning Goals</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-pink-500/30 rounded-xl p-4"
+            >
+              <div className="flex items-center justify-center mb-2">
+                <TrendingUp className="w-5 h-5 text-pink-400 mr-2" />
+                <span className="text-2xl font-bold text-pink-400">{calculateOverallProgress()}%</span>
+              </div>
+              <p className="text-xs text-gray-400">Overall Progress</p>
+            </motion.div>
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${viewMode === 'kanban'
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white border border-gray-500'
+                  : 'bg-[rgba(26,26,26,0.5)] text-gray-400 border border-gray-700'
+                }`}
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+            >
+              KANBAN VIEW
+            </button>
+            <button
+              onClick={() => setViewMode('timeline')}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${viewMode === 'timeline'
+                  ? 'bg-gradient-to-r from-gray-700 to-gray-900 text-white border border-gray-500'
+                  : 'bg-[rgba(26,26,26,0.5)] text-gray-400 border border-gray-700'
+                }`}
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+            >
+              TIMELINE VIEW
+            </button>
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Idea Submission */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6"
-            >
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <Plus className="mr-2" />
-                Submit New Idea
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Your Name</label>
-                  <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    className="w-full bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                    placeholder="Enter your name"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Project Title</label>
-                  <input
-                    type="text"
-                    value={newIdea.title}
-                    onChange={(e) => setNewIdea({...newIdea, title: e.target.value})}
-                    className="w-full bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                    placeholder="Enter project title"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Description</label>
-                  <textarea
-                    value={newIdea.description}
-                    onChange={(e) => setNewIdea({...newIdea, description: e.target.value})}
-                    rows={4}
-                    className="w-full bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                    placeholder="Describe your project idea..."
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Tags (comma separated)</label>
-                  <input
-                    type="text"
-                    value={newIdea.tags}
-                    onChange={(e) => setNewIdea({...newIdea, tags: e.target.value})}
-                    className="w-full bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                    placeholder="e.g., AI, Web, Mobile"
-                  />
-                </div>
-                
-                <button
-                  onClick={handleAddIdea}
-                  className="w-full bg-gradient-to-r from-gray-700 to-gray-900 border border-[rgba(192,192,192,0.3)] rounded-lg py-2 text-gray-300 font-semibold transition-all hover:from-gray-600 hover:to-gray-800 flex items-center justify-center"
+        {/* Kanban Board */}
+        {viewMode === 'kanban' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {columnConfig.map((column, columnIndex) => {
+              const ColumnIcon = column.icon;
+              const columnProjects = getProjectsByStatus(column.id as ProjectCard['status']);
+
+              return (
+                <motion.div
+                  key={column.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: columnIndex * 0.1 }}
+                  className="flex flex-col"
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(column.id as ProjectCard['status'])}
                 >
-                  <Plus className="mr-2" size={18} />
-                  Submit Idea
-                </button>
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6 mt-6"
-            >
-              <h3 className="text-xl font-bold mb-4">How It Works</h3>
-              <ul className="space-y-3 text-gray-400">
-                <li className="flex items-start">
-                  <div className="w-2 h-2 rounded-full bg-gray-500 mt-2 mr-3 flex-shrink-0"></div>
-                  <span>Submit your project ideas to the board</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 rounded-full bg-gray-500 mt-2 mr-3 flex-shrink-0"></div>
-                  <span>Vote on ideas you find interesting</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 rounded-full bg-gray-500 mt-2 mr-3 flex-shrink-0"></div>
-                  <span>Comment to provide feedback or suggestions</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 rounded-full bg-gray-500 mt-2 mr-3 flex-shrink-0"></div>
-                  <span>Collaborate in real-time with other visitors</span>
-                </li>
-              </ul>
-            </motion.div>
-          </div>
-          
-          {/* Middle Column - Ideas List */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold">Project Ideas</h3>
-                <div className="flex items-center">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-sm text-gray-400">
-                    {isConnected ? 'Connected' : 'Disconnected'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {ideas.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
-                    No ideas yet. Be the first to submit one!
-                  </div>
-                ) : (
-                  ideas.map((idea) => (
-                    <motion.div
-                      key={idea.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3 }}
-                      className={`border border-[rgba(192,192,192,0.2)] rounded-lg p-4 cursor-pointer transition-all ${
-                        selectedIdea?.id === idea.id 
-                          ? 'bg-[rgba(192,192,192,0.1)] border-[rgba(192,192,192,0.4)]' 
-                          : 'hover:bg-[rgba(192,192,192,0.05)]'
-                      }`}
-                      onClick={() => setSelectedIdea(idea)}
-                    >
-                      <div className="flex justify-between">
-                        <h4 className="font-bold text-gray-200">{idea.title}</h4>
-                        <div className="flex items-center bg-[rgba(192,192,192,0.1)] rounded-full px-3 py-1">
-                          <ThumbsUp className="mr-1" size={14} />
-                          <span className="text-sm">{idea.votes}</span>
-                        </div>
+                  {/* Column Header */}
+                  <div className={`backdrop-blur-md bg-gradient-to-br ${column.gradient} border ${column.borderColor} rounded-xl p-4 mb-4`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <ColumnIcon className="w-5 h-5 mr-2" />
+                        <h3 className="font-bold text-white" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+                          {column.title}
+                        </h3>
                       </div>
-                      
-                      <p className="text-gray-400 text-sm mt-2 line-clamp-2">
-                        {idea.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {idea.tags.map((tag, index) => (
-                          <span 
-                            key={index} 
-                            className="text-xs bg-[rgba(192,192,192,0.1)] text-gray-400 px-2 py-1 rounded"
+                      <span className="text-sm font-bold bg-white/20 px-2 py-1 rounded-full">
+                        {columnProjects.length}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300">{column.subtitle}</p>
+                  </div>
+
+                  {/* Cards Container */}
+                  <div className="flex-1 space-y-3 min-h-[400px]">
+                    <AnimatePresence>
+                      {columnProjects.map((project) => {
+                        const CardIcon = project.icon || categoryIcons[project.category];
+                        const CategoryIcon = categoryIcons[project.category];
+
+                        return (
+                          <motion.div
+                            key={project.id}
+                            layoutId={project.id}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            draggable
+                            onDragStart={() => handleDragStart(project.id)}
+                            onDragEnd={handleDragEnd}
+                            whileHover={{ scale: 1.02, boxShadow: '0 10px 40px rgba(192, 192, 192, 0.2)' }}
+                            className={`backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-[rgba(192,192,192,0.2)] rounded-xl p-4 cursor-move transition-all ${draggedCard === project.id ? 'opacity-50' : ''
+                              }`}
                           >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        <div className="flex items-center text-xs text-gray-500">
-                          <User className="mr-1" size={12} />
-                          {idea.author}
-                        </div>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <MessageCircle className="mr-1" size={12} />
-                          {idea.comments.length} comments
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-            
-            {/* Right Column - Idea Details and Comments */}
-            {selectedIdea && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6 mt-6"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold">{selectedIdea.title}</h3>
-                  <button 
-                    onClick={() => setSelectedIdea(null)}
-                    className="text-gray-500 hover:text-gray-300"
-                  >
-                    ✕
-                  </button>
-                </div>
-                
-                <div className="flex items-center text-sm text-gray-500 mb-4">
-                  <User className="mr-1" size={14} />
-                  {selectedIdea.author} • {selectedIdea.createdAt.toLocaleDateString()}
-                </div>
-                
-                <p className="text-gray-300 mb-4">{selectedIdea.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {selectedIdea.tags.map((tag, index) => (
-                    <span 
-                      key={index} 
-                      className="text-xs bg-[rgba(192,192,192,0.1)] text-gray-400 px-2 py-1 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex gap-3 mb-6">
-                  <button
-                    onClick={() => handleVote(selectedIdea.id)}
-                    className="flex items-center bg-[rgba(192,192,192,0.1)] hover:bg-[rgba(192,192,192,0.2)] border border-[rgba(192,192,192,0.2)] rounded-lg px-4 py-2 transition-colors"
-                  >
-                    <ThumbsUp className="mr-2" size={16} />
-                    Upvote ({selectedIdea.votes})
-                  </button>
-                </div>
-                
-                <div className="border-t border-[rgba(192,192,192,0.2)] pt-6">
-                  <h4 className="font-bold mb-4 flex items-center">
-                    <MessageCircle className="mr-2" size={18} />
-                    Comments ({selectedIdea.comments.length})
-                  </h4>
-                  
-                  <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
-                    {selectedIdea.comments.length === 0 ? (
-                      <p className="text-gray-500 text-sm">No comments yet. Be the first to comment!</p>
-                    ) : (
-                      selectedIdea.comments.map((comment) => (
-                        <div key={comment.id} className="bg-[rgba(192,192,192,0.05)] rounded-lg p-3">
-                          <div className="flex justify-between">
-                            <div className="font-medium text-gray-300">{comment.author}</div>
-                            <div className="text-xs text-gray-500">
-                              {comment.createdAt.toLocaleDateString()}
+                            {/* Card Header */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center mr-2">
+                                  <CardIcon className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-white text-sm leading-tight">
+                                    {project.title}
+                                  </h4>
+                                </div>
+                              </div>
+                              <CategoryIcon className="w-4 h-4 text-gray-400" />
                             </div>
-                          </div>
-                          <p className="text-gray-400 text-sm mt-1">{comment.content}</p>
-                        </div>
-                      ))
-                    )}
+
+                            {/* Description */}
+                            <p className="text-xs text-gray-400 mb-3 line-clamp-3">
+                              {project.description}
+                            </p>
+
+                            {/* Progress Bar */}
+                            {project.progress > 0 && (
+                              <div className="mb-3">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-xs text-gray-400">Progress</span>
+                                  <span className="text-xs font-bold text-gray-300">{project.progress}%</span>
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${project.progress}%` }}
+                                    transition={{ duration: 1, delay: 0.5 }}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-1.5 rounded-full"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Tech Stack */}
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {project.techStack.slice(0, 4).map((tech, i) => (
+                                <span
+                                  key={i}
+                                  className="text-xs bg-[rgba(192,192,192,0.1)] text-gray-300 px-2 py-0.5 rounded border border-[rgba(192,192,192,0.2)]"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                              {project.techStack.length > 4 && (
+                                <span className="text-xs text-gray-500">
+                                  +{project.techStack.length - 4}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between">
+                              <div className={`text-xs px-2 py-1 rounded border ${priorityColors[project.priority]}`}>
+                                {project.priority.toUpperCase()}
+                              </div>
+                              {project.deadline && (
+                                <div className="flex items-center text-xs text-gray-400">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                </div>
+                              )}
+                              {project.link && (
+                                <motion.a
+                                  href={project.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  whileHover={{ scale: 1.2 }}
+                                  className="text-gray-400 hover:text-white"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                </motion.a>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </AnimatePresence>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Add a comment..."
-                      className="flex-1 bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                    />
-                    <button
-                      onClick={handleAddComment}
-                      className="bg-gradient-to-r from-gray-700 to-gray-900 border border-[rgba(192,192,192,0.3)] rounded-lg px-4 py-2 text-gray-300 font-semibold transition-all hover:from-gray-600 hover:to-gray-800 flex items-center"
-                    >
-                      <Send size={16} />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              );
+            })}
           </div>
-        </div>
+        )}
+
+        {/* Timeline View */}
+        {viewMode === 'timeline' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6"
+          >
+            <div className="space-y-8">
+              {['in-progress', 'learning'].map((status, index) => {
+                const statusProjects = getProjectsByStatus(status as ProjectCard['status']);
+                const column = columnConfig.find(c => c.id === status);
+                if (!column || statusProjects.length === 0) return null;
+
+                const ColumnIcon = column.icon;
+
+                return (
+                  <motion.div
+                    key={status}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${column.gradient} border ${column.borderColor} flex items-center justify-center mr-3`}>
+                        <ColumnIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+                          {column.title}
+                        </h3>
+                        <p className="text-xs text-gray-400">{statusProjects.length} items</p>
+                      </div>
+                    </div>
+
+                    <div className="pl-8 border-l-2 border-gray-700 space-y-4">
+                      {statusProjects.map((project) => (
+                        <motion.div
+                          key={project.id}
+                          whileHover={{ x: 5 }}
+                          className="backdrop-blur-md bg-[rgba(26,26,26,0.5)] border border-[rgba(192,192,192,0.2)] rounded-lg p-4 ml-6 relative"
+                        >
+                          <div className="absolute -left-10 top-6 w-4 h-4 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 border-2 border-gray-700" />
+
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-bold text-white">{project.title}</h4>
+                            {project.deadline && (
+                              <div className="flex items-center text-xs text-gray-400">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                {new Date(project.deadline).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-sm text-gray-400 mb-3">{project.description}</p>
+
+                          {project.progress > 0 && (
+                            <div className="mb-2">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs text-gray-500">Progress</span>
+                                <span className="text-xs font-bold text-gray-300">{project.progress}%</span>
+                              </div>
+                              <div className="w-full bg-gray-700 rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full"
+                                  style={{ width: `${project.progress}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap gap-2">
+                            {project.techStack.map((tech, i) => (
+                              <span
+                                key={i}
+                                className="text-xs bg-[rgba(192,192,192,0.1)] text-gray-300 px-2 py-1 rounded"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Footer Info */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-12 text-center"
+        >
+          <div className="inline-flex items-center gap-2 backdrop-blur-md bg-[rgba(26,26,26,0.5)] border border-[rgba(192,192,192,0.2)] rounded-full px-6 py-3">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            <p className="text-sm text-gray-400">
+              <span className="text-white font-semibold">Drag & Drop</span> cards between columns to update status
+            </p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

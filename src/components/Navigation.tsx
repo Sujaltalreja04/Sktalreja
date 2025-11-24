@@ -10,6 +10,7 @@ const navLinks = [
   { name: 'PROJECTS', href: '#projects' },
   { name: 'SKILLS', href: '#skills' },
   { name: 'ACHIEVEMENTS', href: '#achievements' },
+  { name: 'ROADMAP', href: '#planning' },
   { name: 'CONTACT', href: '#contact' },
 ];
 
@@ -21,7 +22,7 @@ export const Navigation = () => {
   const scrollProgress = useScrollProgress();
   const navRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  
+
   // Use Framer Motion for enhanced scroll effects
   const { scrollY } = useScroll();
   const navBackground = useTransform(
@@ -39,7 +40,7 @@ export const Navigation = () => {
   useEffect(() => {
     // Check if speech recognition is supported
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
+
     if (!SpeechRecognition) {
       setSpeechSupported(false);
       return;
@@ -84,6 +85,10 @@ export const Navigation = () => {
       'skills': '#skills',
       'achievements': '#achievements',
       'certifications': '#achievements',
+      'planning': '#planning',
+      'roadmap': '#planning',
+      'kanban': '#planning',
+      'current projects': '#planning',
       'contact': '#contact',
       'hackathons': '#achievements',
       'ai projects': '#projects',
@@ -96,7 +101,7 @@ export const Navigation = () => {
 
     // Try to find a matching command
     let targetSection = '';
-    
+
     for (const [key, value] of Object.entries(commandMap)) {
       if (command.includes(key)) {
         targetSection = value;
@@ -123,7 +128,7 @@ export const Navigation = () => {
 
   const toggleVoiceRecognition = () => {
     if (!speechSupported) return;
-    
+
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -179,8 +184,8 @@ export const Navigation = () => {
         className="fixed top-2 sm:top-4 left-0 right-0 z-40 flex justify-center"
       >
         <motion.div
-          className="backdrop-blur-md border rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-4 w-[90%] sm:w-[92%] max-w-5xl"
-          style={{ 
+          className="backdrop-blur-md border rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-4 w-[95%] sm:w-[96%] max-w-6xl"
+          style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
             backgroundColor: navBackground,
             borderColor: navBorder
@@ -200,11 +205,10 @@ export const Navigation = () => {
                 <motion.button
                   key={link.name}
                   onClick={() => scrollToSection(link.href)}
-                  className={`relative text-xs sm:text-sm lg:text-base font-semibold transition-colors px-2 py-1 whitespace-nowrap ${
-                    activeSection === link.href.substring(1)
-                      ? 'text-gray-300'
-                      : 'text-gray-500 hover:text-gray-300'
-                  }`}
+                  className={`relative text-xs sm:text-sm lg:text-base font-semibold transition-colors px-2 py-1 whitespace-nowrap ${activeSection === link.href.substring(1)
+                    ? 'text-gray-300'
+                    : 'text-gray-500 hover:text-gray-300'
+                    }`}
                   style={{ fontFamily: 'Orbitron, sans-serif' }}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -224,11 +228,10 @@ export const Navigation = () => {
             {/* Voice Control Button - Always visible now */}
             {speechSupported && (
               <motion.button
-                className={`flex items-center justify-center ml-4 w-10 h-10 rounded-full ${
-                  isListening 
-                    ? 'bg-red-500/20 border border-red-500/50' 
-                    : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
-                }`}
+                className={`flex items-center justify-center ml-4 w-10 h-10 rounded-full ${isListening
+                  ? 'bg-red-500/20 border border-red-500/50'
+                  : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
+                  }`}
                 onClick={toggleVoiceRecognition}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -272,15 +275,14 @@ export const Navigation = () => {
                   {link.name}
                 </motion.button>
               ))}
-              
+
               {/* Mobile Voice Control Button */}
               {speechSupported && (
                 <motion.button
-                  className={`flex items-center justify-center mt-4 w-full py-3 rounded-lg ${
-                    isListening 
-                      ? 'bg-red-500/20 border border-red-500/50' 
-                      : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
-                  }`}
+                  className={`flex items-center justify-center mt-4 w-full py-3 rounded-lg ${isListening
+                    ? 'bg-red-500/20 border border-red-500/50'
+                    : 'bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.2)]'
+                    }`}
                   onClick={toggleVoiceRecognition}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

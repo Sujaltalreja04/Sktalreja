@@ -12,11 +12,11 @@ const AchievementsSection = lazy(() => import('./components/sections/Achievement
 const StorySection = lazy(() => import('./components/sections/StorySection').then(module => ({ default: module.StorySection })));
 // const BlogsSection = lazy(() => import('./components/sections/BlogsSection').then(module => ({ default: module.BlogsSection })));
 const ContactSection = lazy(() => import('./components/sections/ContactSection').then(module => ({ default: module.ContactSection })));
-// const PlanningBoardSection = lazy(() => import('./components/sections/PlanningBoardSection').then(module => ({ default: module.PlanningBoardSection })));
+const PlanningBoardSection = lazy(() => import('./components/sections/PlanningBoardSection').then(module => ({ default: module.PlanningBoardSection })));
 
 function App() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   return (
     <div ref={containerRef} className="relative min-h-screen bg-[#0a0a0a]">
       <Suspense fallback={null}>
@@ -36,7 +36,7 @@ function App() {
           <ProjectsSection />
           <SkillsSection />
           <AchievementsSection />
-          {/* <PlanningBoardSection /> */}
+          <PlanningBoardSection />
           {/* <BlogsSection /> */}
           <ContactSection />
         </Suspense>
