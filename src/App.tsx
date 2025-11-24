@@ -3,6 +3,8 @@ import { Navigation } from './components/Navigation';
 import { HeroSection } from './components/sections/HeroSection';
 import ChatBot from './components/ChatBot';
 import { VoiceCommandHelper } from './components/VoiceCommandHelper';
+import { AIInsights } from './components/AIInsights';
+import { SmartScrollPredictor } from './components/SmartScrollPredictor';
 
 const Scene3D = lazy(() => import('./components/3d/Scene3D').then(module => ({ default: module.Scene3D })));
 const AboutSection = lazy(() => import('./components/sections/AboutSection').then(module => ({ default: module.AboutSection })));
@@ -24,6 +26,11 @@ function App() {
       </Suspense>
       <Navigation />
 
+      {/* AI-Powered Insights - Top Banner */}
+      <div className="relative z-10 pt-20">
+        <AIInsights />
+      </div>
+
       <main className="relative z-10">
         <HeroSection />
         <Suspense fallback={
@@ -42,8 +49,10 @@ function App() {
         </Suspense>
       </main>
 
+      {/* AI-Enhanced Features */}
       <ChatBot />
       <VoiceCommandHelper />
+      <SmartScrollPredictor />
 
       <footer className="relative z-10 py-6 md:py-8 text-center text-gray-500 border-t border-gray-800">
         <div className="container mx-auto px-4 sm:px-6">
