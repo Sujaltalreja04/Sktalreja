@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Html, useTexture } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Html, useTexture, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Move, Eye, Info } from 'lucide-react';
+import { X, Move, Eye, Info, PlayCircle, Pause } from 'lucide-react';
 
 interface Museum3DGalleryProps {
     isOpen: boolean;
@@ -19,32 +19,106 @@ interface Museum3DGalleryProps {
     };
 }
 
-// Museum Room Component
+// Floating Particles for atmosphere
+function FloatingParticles() {
+    const particlesRef = useRef<THREE.Points>(null);
+    const particleCount = 100;
+
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 30;
+        positions[i * 3 + 1] = Math.random() * 8;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+    }
+
+    useFrame(({ clock }) => {
+        if (particlesRef.current) {
+            particlesRef.current.rotation.y = clock.getElapsedTime() * 0.01;
+        }
+    });
+
+    return (
+        <points ref={particlesRef}>
+            <bufferGeometry>
+                <bufferAttribute
+                    attach="attributes-position"
+                    count={particleCount}
+                    array={positions}
+                    itemSize={3}
+                />
+            </bufferGeometry>
+            <pointsMaterial
+                size={0.05}
+                color="#ffffff"
+                transparent
+                opacity={0.6}
+                sizeAttenuation
+            />
+        </points>
+    );
+}
+
+// Dynamic Spotlight that moves
+function DynamicSpotlight() {
+    const lightRef = useRef<THREE.SpotLight>(null);
+
+    useFrame(({ clock }) => {
+        if (lightRef.current) {
+            lightRef.current.position.x = Math.sin(clock.getElapsedTime() * 0.5) * 5;
+            lightRef.current.position.z = -5 + Math.cos(clock.getElapsedTime() * 0.3) * 3;
+        }
+    });
+
+    return (
+        <spotLight
+            ref={lightRef}
+            position={[0, 8, -5]}
+            angle={0.4}
+            penumbra={1}
+            intensity={2}
+            color="#00d4ff"
+            castShadow
+        />
+    );
+}
+
+// Enhanced Museum Room with reflective floor
 function MuseumRoom({ projectImage }: { projectImage: string }) {
     const texture = useTexture(projectImage);
 
     return (
         <group>
-            {/* Floor */}
+            {/* ENHANCED FLOOR with Reflections */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
                 <planeGeometry args={[30, 30]} />
-                <meshStandardMaterial
+                <MeshReflectorMaterial
+                    blur={[300, 100]}
+                    resolution={512}
+                    mixBlur={1}
+                    mixStrength={0.5}
+                    roughness={1}
+                    depthScale={1.2}
+                    minDepthThreshold={0.4}
+                    maxDepthThreshold={1.4}
                     color="#1a1a1a"
-                    roughness={0.3}
-                    metalness={0.7}
+                    metalness={0.8}
                 />
             </mesh>
 
-            {/* Ceiling */}
+            {/* Ceiling with accent lights */}
             <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 6, 0]}>
                 <planeGeometry args={[30, 30]} />
                 <meshStandardMaterial color="#0a0a0a" />
             </mesh>
 
-            {/* Back Wall */}
+            {/* Back Wall with gradient */}
             <mesh position={[0, 2, -10]} receiveShadow>
                 <planeGeometry args={[30, 10]} />
-                <meshStandardMaterial color="#2a2a2a" />
+                <meshStandardMaterial
+                    color="#2a2a2a"
+                    roughness={0.8}
+                    metalness={0.2}
+                />
             </mesh>
 
             {/* Left Wall */}
@@ -59,15 +133,34 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                 <meshStandardMaterial color="#2a2a2a" />
             </mesh>
 
+            {/* Glowing accent strips on walls */}
+            <mesh position={[-14.9, 4, 5]} rotation={[0, Math.PI / 2, 0]}>
+                <planeGeometry args={[30, 0.2]} />
+                <meshStandardMaterial
+                    color="#00ffff"
+                    emissive="#00ffff"
+                    emissiveIntensity={0.5}
+                />
+            </mesh>
+
+            <mesh position={[14.9, 4, 5]} rotation={[0, -Math.PI / 2, 0]}>
+                <planeGeometry args={[30, 0.2]} />
+                <meshStandardMaterial
+                    color="#ff00ff"
+                    emissive="#ff00ff"
+                    emissiveIntensity={0.5}
+                />
+            </mesh>
+
             {/* Project Display Frame - Main Attraction */}
             <group position={[0, 1.5, -9.8]}>
-                {/* Frame Border */}
-                <mesh position={[0, 0, 0.01]}>
+                {/* Frame Border with metallic finish */}
+                <mesh position={[0, 0, 0.01]} castShadow>
                     <boxGeometry args={[8.4, 5.4, 0.2]} />
                     <meshStandardMaterial
                         color="#c0c0c0"
-                        metalness={0.9}
-                        roughness={0.1}
+                        metalness={0.95}
+                        roughness={0.05}
                     />
                 </mesh>
 
@@ -77,135 +170,208 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                     <meshStandardMaterial
                         map={texture}
                         emissive="#ffffff"
-                        emissiveIntensity={0.2}
+                        emissiveIntensity={0.3}
                     />
                 </mesh>
 
-                {/* Spotlight on the frame */}
+                {/* Dedicated spotlight on frame */}
                 <spotLight
-                    position={[0, 3, 2]}
-                    angle={0.5}
-                    penumbra={0.5}
-                    intensity={2}
+                    position={[0, 4, 2]}
+                    angle={0.6}
+                    penumbra={0.8}
+                    intensity={3}
+                    color="#ffffff"
                     castShadow
-                    target-position={[0, 0, 0]}
                 />
+
+                {/* Rim lighting */}
+                <pointLight position={[-4.5, 0, 0.5]} intensity={0.5} color="#00ffff" />
+                <pointLight position={[4.5, 0, 0.5]} intensity={0.5} color="#ff00ff" />
             </group>
 
-            {/* Pedestal for interactive info */}
-            <mesh position={[0, -1, -7]} castShadow>
-                <cylinderGeometry args={[0.8, 1, 2, 32]} />
-                <meshStandardMaterial
-                    color="#3a3a3a"
-                    metalness={0.6}
-                    roughness={0.4}
-                />
-            </mesh>
+            {/* Enhanced Pedestal with glow */}
+            <group position={[0, -1, -7]}>
+                <mesh castShadow>
+                    <cylinderGeometry args={[0.8, 1, 2, 32]} />
+                    <meshStandardMaterial
+                        color="#3a3a3a"
+                        metalness={0.7}
+                        roughness={0.3}
+                    />
+                </mesh>
+                {/* Glowing top ring */}
+                <mesh position={[0, 1.05, 0]}>
+                    <torusGeometry args={[0.82, 0.05, 16, 100]} />
+                    <meshStandardMaterial
+                        color="#00ffff"
+                        emissive="#00ffff"
+                        emissiveIntensity={1}
+                    />
+                </mesh>
+            </group>
 
-            {/* Ambient lighting spheres (decorative) */}
-            <mesh position={[-8, 4, -8]}>
-                <sphereGeometry args={[0.3, 32, 32]} />
-                <meshStandardMaterial
-                    color="#00ffff"
-                    emissive="#00ffff"
-                    emissiveIntensity={0.5}
-                />
-            </mesh>
+            {/* Enhanced ambient lighting spheres */}
+            <group>
+                <mesh position={[-8, 4, -8]}>
+                    <sphereGeometry args={[0.4, 32, 32]} />
+                    <meshStandardMaterial
+                        color="#00ffff"
+                        emissive="#00ffff"
+                        emissiveIntensity={2}
+                    />
+                    <pointLight intensity={1.5} color="#00ffff" distance={10} />
+                </mesh>
 
-            <mesh position={[8, 4, -8]}>
-                <sphereGeometry args={[0.3, 32, 32]} />
-                <meshStandardMaterial
-                    color="#ff00ff"
-                    emissive="#ff00ff"
-                    emissiveIntensity={0.5}
-                />
-            </mesh>
+                <mesh position={[8, 4, -8]}>
+                    <sphereGeometry args={[0.4, 32, 32]} />
+                    <meshStandardMaterial
+                        color="#ff00ff"
+                        emissive="#ff00ff"
+                        emissiveIntensity={2}
+                    />
+                    <pointLight intensity={1.5} color="#ff00ff" distance={10} />
+                </mesh>
+
+                {/* Additional ceiling lights */}
+                <mesh position={[0, 5.8, 0]}>
+                    <sphereGeometry args={[0.3, 32, 32]} />
+                    <meshStandardMaterial
+                        color="#ffffff"
+                        emissive="#ffffff"
+                        emissiveIntensity={1}
+                    />
+                    <pointLight intensity={2} color="#ffffff" distance={15} />
+                </mesh>
+            </group>
         </group>
     );
 }
 
-// Floating Info Panel in 3D Space
-function FloatingInfoPanel({ project, position }: { project: any; position: [number, number, number] }) {
+// Clickable Info Point in 3D Space
+function ClickableInfoPoint({
+    position,
+    label,
+    description,
+    color = "#00ffff"
+}: {
+    position: [number, number, number];
+    label: string;
+    description: string;
+    color?: string;
+}) {
+    const [hovered, setHovered] = useState(false);
+    const [clicked, setClicked] = useState(false);
     const meshRef = useRef<THREE.Mesh>(null);
 
     useFrame(({ clock }) => {
         if (meshRef.current) {
-            meshRef.current.position.y = position[1] + Math.sin(clock.getElapsedTime() * 0.5) * 0.1;
+            meshRef.current.position.y = position[1] + Math.sin(clock.getElapsedTime() * 2) * 0.1;
+            meshRef.current.rotation.y += 0.02;
         }
     });
 
     return (
         <group position={position}>
-            <Html
-                transform
-                distanceFactor={2}
-                style={{
-                    width: '400px',
-                    background: 'rgba(26, 26, 26, 0.95)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(192, 192, 192, 0.3)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.8)',
-                }}
+            <mesh
+                ref={meshRef}
+                onPointerOver={() => setHovered(true)}
+                onPointerOut={() => setHovered(false)}
+                onClick={() => setClicked(!clicked)}
+                scale={hovered ? 1.3 : 1}
             >
-                <div style={{ fontFamily: 'Orbitron, sans-serif' }}>
-                    <h3 style={{
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        marginBottom: '12px',
-                        background: 'linear-gradient(to right, #d1d5db, #9ca3af)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                    }}>
-                        {project.title}
-                    </h3>
-                    <p style={{
-                        color: '#9ca3af',
-                        fontSize: '14px',
-                        marginBottom: '16px',
-                        lineHeight: '1.6'
-                    }}>
-                        {project.description}
-                    </p>
-                    <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '8px',
-                        marginBottom: '16px'
-                    }}>
-                        {project.tags.map((tag: string, i: number) => (
-                            <span
-                                key={i}
-                                style={{
-                                    background: 'rgba(192, 192, 192, 0.1)',
-                                    border: '1px solid rgba(192, 192, 192, 0.2)',
-                                    borderRadius: '12px',
-                                    padding: '4px 12px',
-                                    fontSize: '12px',
-                                    color: '#d1d5db',
-                                }}
-                            >
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </Html>
-            <mesh ref={meshRef}>
-                <sphereGeometry args={[0.1, 16, 16]} />
+                <sphereGeometry args={[0.15, 32, 32]} />
                 <meshStandardMaterial
-                    color="#00ffff"
-                    emissive="#00ffff"
-                    emissiveIntensity={1}
+                    color={color}
+                    emissive={color}
+                    emissiveIntensity={hovered ? 2 : 1}
+                    transparent
+                    opacity={0.9}
                 />
             </mesh>
+
+            {/* Pulsing ring */}
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[0.2, 0.25, 32]} />
+                <meshBasicMaterial color={color} transparent opacity={hovered ? 0.8 : 0.4} />
+            </mesh>
+
+            {/* Info panel when clicked or hovered */}
+            {(clicked || hovered) && (
+                <Html distanceFactor={4} position={[0, 0.5, 0]}>
+                    <div style={{
+                        background: 'rgba(26, 26, 26, 0.95)',
+                        backdropFilter: 'blur(10px)',
+                        border: `2px solid ${color}`,
+                        borderRadius: '12px',
+                        padding: '16px',
+                        minWidth: '200px',
+                        boxShadow: `0 0 20px ${color}`,
+                        fontFamily: 'Orbitron, sans-serif',
+                    }}>
+                        <h4 style={{
+                            color: color,
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            marginBottom: '8px'
+                        }}>
+                            {label}
+                        </h4>
+                        <p style={{
+                            color: '#9ca3af',
+                            fontSize: '13px',
+                            lineHeight: '1.4'
+                        }}>
+                            {description}
+                        </p>
+                    </div>
+                </Html>
+            )}
+
+            <pointLight color={color} intensity={hovered ? 2 : 1} distance={5} />
         </group>
     );
 }
 
-// Camera Controller for smooth navigation
-function CameraController() {
+// Auto-Tour Camera Animation
+function AutoTourCamera({ isActive, onComplete }: { isActive: boolean; onComplete: () => void }) {
+    const { camera } = useThree();
+    const startTime = useRef(0);
+    const tourDuration = 15; // 15 seconds tour
+
+    useEffect(() => {
+        if (isActive) {
+            startTime.current = Date.now();
+        }
+    }, [isActive]);
+
+    useFrame(() => {
+        if (!isActive) return;
+
+        const elapsed = (Date.now() - startTime.current) / 1000;
+        const progress = Math.min(elapsed / tourDuration, 1);
+
+        if (progress >= 1) {
+            onComplete();
+            return;
+        }
+
+        // Cinematic camera path
+        const angle = progress * Math.PI * 2;
+        const radius = 8 - progress * 3; // Move closer
+
+        camera.position.x = Math.sin(angle) * radius;
+        camera.position.z = 10 - progress * 15; // Move forward
+        camera.position.y = 1 + Math.sin(progress * Math.PI) * 2; // Arc up and down
+
+        // Look at the main display
+        camera.lookAt(0, 1.5, -9.8);
+    });
+
+    return null;
+}
+
+// Camera Controller for manual navigation
+function CameraController({ enabled }: { enabled: boolean }) {
     const { camera } = useThree();
     const [keys, setKeys] = useState<Set<string>>(new Set());
 
@@ -232,6 +398,8 @@ function CameraController() {
     }, []);
 
     useFrame(() => {
+        if (!enabled) return;
+
         const speed = 0.1;
         const direction = new THREE.Vector3();
 
@@ -256,7 +424,7 @@ function CameraController() {
             camera.position.addScaledVector(right, -speed);
         }
 
-        // Keep camera at a reasonable height
+        // Keep camera at reasonable height
         camera.position.y = Math.max(0, Math.min(4, camera.position.y));
 
         // Boundary constraints
@@ -273,13 +441,18 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
     project
 }) => {
     const [showInstructions, setShowInstructions] = useState(true);
+    const [autoTourActive, setAutoTourActive] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            const timer = setTimeout(() => setShowInstructions(false), 5000);
+            const timer = setTimeout(() => setShowInstructions(false), 6000);
             return () => clearTimeout(timer);
         }
     }, [isOpen]);
+
+    const toggleAutoTour = () => {
+        setAutoTourActive(!autoTourActive);
+    };
 
     return (
         <AnimatePresence>
@@ -306,21 +479,35 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
                         animate={{ y: 0 }}
                         className="absolute top-6 left-6 z-50 backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-[rgba(192,192,192,0.3)] rounded-xl px-6 py-4"
                     >
-                        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text text-transparent flex items-center gap-3">
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent flex items-center gap-3">
                             <Eye className="text-cyan-400" size={28} />
                             3D Museum Gallery
                         </h2>
                         <p className="text-gray-400 text-sm mt-1">{project.title}</p>
                     </motion.div>
 
+                    {/* Auto-Tour Button */}
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={toggleAutoTour}
+                        className={`absolute top-32 left-6 z-50 px-6 py-3 backdrop-blur-md border rounded-xl font-semibold transition-all flex items-center gap-2 ${autoTourActive
+                                ? 'bg-cyan-500/30 border-cyan-400/60 text-cyan-300'
+                                : 'bg-[rgba(26,26,26,0.8)] border-[rgba(192,192,192,0.3)] text-gray-300'
+                            }`}
+                    >
+                        {autoTourActive ? <Pause size={20} /> : <PlayCircle size={20} />}
+                        {autoTourActive ? 'Stop Auto-Tour' : 'Start Auto-Tour'}
+                    </motion.button>
+
                     {/* Instructions Panel */}
                     <AnimatePresence>
-                        {showInstructions && (
+                        {showInstructions && !autoTourActive && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 backdrop-blur-md bg-[rgba(26,26,26,0.9)] border border-[rgba(192,192,192,0.3)] rounded-xl px-8 py-4 max-w-2xl"
+                                className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 backdrop-blur-md bg-[rgba(26,26,26,0.9)] border border-cyan-400/40 rounded-xl px-8 py-4 max-w-2xl"
                             >
                                 <div className="flex items-start gap-4">
                                     <Info className="text-cyan-400 flex-shrink-0 mt-1" size={24} />
@@ -329,14 +516,16 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
                                         <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
                                             <div className="flex items-center gap-2">
                                                 <Move size={16} className="text-cyan-400" />
-                                                <span><strong>WASD</strong> or <strong>Arrow Keys</strong> - Move around</span>
+                                                <span><strong>WASD</strong> or <strong>Arrow Keys</strong> - Move</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Eye size={16} className="text-cyan-400" />
                                                 <span><strong>Mouse Drag</strong> - Look around</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs text-gray-400 mt-3">Explore the gallery and walk closer to the project display!</p>
+                                        <p className="text-xs text-cyan-300 mt-3">
+                                            💡 Click on glowing orbs for more info • Try Auto-Tour for a guided experience
+                                        </p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -350,7 +539,7 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => window.open(project.projectUrl, '_blank')}
-                                className="px-6 py-3 backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-[rgba(192,192,192,0.3)] rounded-xl text-gray-300 hover:bg-cyan-500/20 transition-all font-semibold"
+                                className="px-6 py-3 backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-cyan-400/40 rounded-xl text-cyan-300 hover:bg-cyan-500/20 transition-all font-semibold"
                             >
                                 Visit Live Project
                             </motion.button>
@@ -360,7 +549,7 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => window.open(project.videoUrl, '_blank')}
-                                className="px-6 py-3 backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-[rgba(192,192,192,0.3)] rounded-xl text-gray-300 hover:bg-purple-500/20 transition-all font-semibold"
+                                className="px-6 py-3 backdrop-blur-md bg-[rgba(26,26,26,0.8)] border border-purple-400/40 rounded-xl text-purple-300 hover:bg-purple-500/20 transition-all font-semibold"
                             >
                                 Watch Demo Video
                             </motion.button>
@@ -379,35 +568,72 @@ export const Museum3DGallery: React.FC<Museum3DGalleryProps> = ({
                     <Canvas shadows>
                         <PerspectiveCamera makeDefault position={[0, 1, 10]} fov={75} />
 
-                        {/* Lighting Setup */}
-                        <ambientLight intensity={0.3} />
+                        {/* Enhanced Lighting Setup */}
+                        <ambientLight intensity={0.2} />
                         <directionalLight
                             position={[10, 10, 5]}
-                            intensity={0.5}
+                            intensity={0.4}
                             castShadow
+                            shadow-mapSize-width={2048}
+                            shadow-mapSize-height={2048}
                         />
-                        <pointLight position={[0, 5, 0]} intensity={0.8} color="#ffffff" />
-                        <pointLight position={[-8, 4, -8]} intensity={0.5} color="#00ffff" />
-                        <pointLight position={[8, 4, -8]} intensity={0.5} color="#ff00ff" />
+
+                        {/* Dynamic spotlight */}
+                        <DynamicSpotlight />
+
+                        {/* Key lights */}
+                        <pointLight position={[0, 6, 0]} intensity={1.2} color="#ffffff" />
+                        <pointLight position={[-8, 4, -8]} intensity={1} color="#00ffff" distance={15} />
+                        <pointLight position={[8, 4, -8]} intensity={1} color="#ff00ff" distance={15} />
+                        <pointLight position={[0, 2, 5]} intensity={0.5} color="#ffffff" />
 
                         {/* Museum Environment */}
                         <MuseumRoom projectImage={project.image} />
 
-                        {/* Floating Info Panel */}
-                        <FloatingInfoPanel project={project} position={[0, 0.5, -7]} />
+                        {/* Floating Particles */}
+                        <FloatingParticles />
+
+                        {/* Clickable Info Points */}
+                        <ClickableInfoPoint
+                            position={[-4, 2, -6]}
+                            label="Tech Stack"
+                            description={`Built with: ${project.tags.slice(0, 3).join(', ')}`}
+                            color="#00ffff"
+                        />
+                        <ClickableInfoPoint
+                            position={[4, 2, -6]}
+                            label="Features"
+                            description={project.description}
+                            color="#ff00ff"
+                        />
+                        <ClickableInfoPoint
+                            position={[0, 3.5, -4]}
+                            label="Project Info"
+                            description="Click the buttons on the right to explore more!"
+                            color="#ffaa00"
+                        />
 
                         {/* Camera Controls */}
-                        <OrbitControls
-                            enablePan={false}
-                            enableZoom={true}
-                            minDistance={2}
-                            maxDistance={15}
-                            maxPolarAngle={Math.PI / 2}
-                            target={[0, 1, -5]}
-                        />
-                        <CameraController />
+                        {autoTourActive ? (
+                            <AutoTourCamera
+                                isActive={autoTourActive}
+                                onComplete={() => setAutoTourActive(false)}
+                            />
+                        ) : (
+                            <>
+                                <OrbitControls
+                                    enablePan={false}
+                                    enableZoom={true}
+                                    minDistance={2}
+                                    maxDistance={15}
+                                    maxPolarAngle={Math.PI / 2}
+                                    target={[0, 1, -5]}
+                                />
+                                <CameraController enabled={!autoTourActive} />
+                            </>
+                        )}
 
-                        {/* Fog for depth */}
+                        {/* Atmospheric fog */}
                         <fog attach="fog" args={['#0a0a0a', 15, 30]} />
                     </Canvas>
                 </motion.div>
