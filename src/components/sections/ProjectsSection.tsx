@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { motion, useTransform, useViewportScroll } from 'framer-motion';
 import { useInView } from '../../hooks/useInView';
 import { useResponsive } from '../../hooks/useResponsive';
-import { Code, Globe, BarChart3, ExternalLink, Video } from 'lucide-react';
+import { Code, Globe, BarChart3, ExternalLink, Video, Box } from 'lucide-react';
 import { VideoModal } from '../VideoModal';
+import { Museum3DGallery } from '../3d/Museum3DGallery';
 
 const projects = [
   {
@@ -76,6 +77,8 @@ export const ProjectsSection = () => {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
+  const [museum3DOpen, setMuseum3DOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
   const { scrollY } = useViewportScroll();
   const { isSmallScreen, isMediumScreen } = useResponsive();
 
@@ -99,6 +102,16 @@ export const ProjectsSection = () => {
   const closeVideoModal = () => {
     setVideoModalOpen(false);
     setTimeout(() => setSelectedVideo(null), 300); // Clear after animation
+  };
+
+  const open3DGallery = (project: typeof projects[0]) => {
+    setSelectedProject(project);
+    setMuseum3DOpen(true);
+  };
+
+  const close3DGallery = () => {
+    setMuseum3DOpen(false);
+    setTimeout(() => setSelectedProject(null), 300);
   };
 
   const containerVariants = {
@@ -292,6 +305,26 @@ export const ProjectsSection = () => {
                           VIEW VIDEO
                         </motion.button>
                       )}
+
+                      {/* 3D Gallery Button - Only for Evolvex AI */}
+                      {index === 2 && (
+                        <motion.button
+                          className="w-full backdrop-blur-md bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-400/40 rounded-lg px-3 py-2 md:px-4 md:py-3 text-cyan-300 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
+                          whileHover={{
+                            scale: 1.05,
+                            boxShadow: '0 0 30px rgba(0, 255, 255, 0.6)',
+                            background: 'linear-gradient(to right, rgba(6, 182, 212, 0.3), rgba(168, 85, 247, 0.3))',
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            open3DGallery(project);
+                          }}
+                        >
+                          <Box className="w-4 h-4" />
+                          VIEW IN 3D GALLERY
+                        </motion.button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -308,6 +341,15 @@ export const ProjectsSection = () => {
           onClose={closeVideoModal}
           videoUrl={selectedVideo.url}
           title={selectedVideo.title}
+        />
+      )}
+
+      {/* 3D Museum Gallery */}
+      {selectedProject && (
+        <Museum3DGallery
+          isOpen={museum3DOpen}
+          onClose={close3DGallery}
+          project={selectedProject}
         />
       )}
     </motion.section>
