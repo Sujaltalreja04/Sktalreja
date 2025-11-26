@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, MessageCircle, Sparkles } from 'lucide-react';
+import { Send, X, MessageCircle, Sparkles, AlertTriangle } from 'lucide-react';
+
+// Rate limiting configuration
+const MAX_REQUESTS_PER_HOUR = 10; // Limit to prevent API bill explosion
+const RATE_LIMIT_KEY = 'chatbot_rate_limit';
+
+interface RateLimitData {
+  count: number;
+  resetTime: number;
+}
 
 // Suggested questions for users
 const SUGGESTED_QUESTIONS = [
@@ -15,7 +24,7 @@ const SUGGESTED_QUESTIONS = [
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([
-    { role: 'assistant', content: 'Hello! I\'m Eranix AI, your guide to this portfolio. How can I help you today?' }
+    { role: 'assistant', content: 'Hello! I\'m Eranix AI, your guide to Sujal\'s portfolio. Ask me anything about his projects, skills, or achievements!' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +32,8 @@ const ChatBot = () => {
   const [streamingMessage, setStreamingMessage] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [usedQuestions, setUsedQuestions] = useState<string[]>([]);
+  const [rateLimitReached, setRateLimitReached] = useState(false);
+  const [remainingRequests, setRemainingRequests] = useState(MAX_REQUESTS_PER_HOUR);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,6 +43,60 @@ const ChatBot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingMessage]);
+
+  // Check and update rate limit
+  useEffect(() => {
+    updateRateLimit();
+  }, []);
+
+  const updateRateLimit = () => {
+    const now = Date.now();
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+
+    if (stored) {
+      const data: RateLimitData = JSON.parse(stored);
+
+      // Reset if hour has passed
+      if (now >= data.resetTime) {
+        localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({
+          count: 0,
+          resetTime: now + 3600000 // 1 hour from now
+        }));
+        setRemainingRequests(MAX_REQUESTS_PER_HOUR);
+        setRateLimitReached(false);
+      } else {
+        const remaining = MAX_REQUESTS_PER_HOUR - data.count;
+        setRemainingRequests(remaining);
+        setRateLimitReached(remaining <= 0);
+      }
+    } else {
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({
+        count: 0,
+        resetTime: now + 3600000
+      }));
+    }
+  };
+
+  const incrementRateLimit = (): boolean => {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY);
+    if (!stored) return false;
+
+    const data: RateLimitData = JSON.parse(stored);
+    if (data.count >= MAX_REQUESTS_PER_HOUR) {
+      setRateLimitReached(true);
+      return false;
+    }
+
+    data.count++;
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(data));
+    setRemainingRequests(MAX_REQUESTS_PER_HOUR - data.count);
+
+    if (data.count >= MAX_REQUESTS_PER_HOUR) {
+      setRateLimitReached(true);
+    }
+
+    return true;
+  };
 
   // Simulate streaming effect for AI responses
   const simulateStreaming = async (text: string) => {
@@ -57,6 +122,25 @@ const ChatBot = () => {
     const textToSend = messageText || inputValue;
     if (!textToSend.trim() || isLoading) return;
 
+    // Check rate limit
+    if (rateLimitReached) {
+      const errorMessage = {
+        role: 'assistant',
+        content: '⚠️ You\'ve reached the hourly limit (10 requests). Please try again later to prevent excessive API costs.'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
+    if (!incrementRateLimit()) {
+      const errorMessage = {
+        role: 'assistant',
+        content: '⚠️ Rate limit reached. Please wait before sending more messages.'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
     const userMessage = { role: 'user', content: textToSend };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -70,54 +154,39 @@ const ChatBot = () => {
     }
 
     try {
-      // Create enhanced context about the portfolio
-      const portfolioContext = `
-        You are Eranix AI, an intelligent assistant for Sujal Talreja's portfolio website.
-        Your role is to help visitors learn about Sujal and his work.
-        
-        Key Information About Sujal:
-        - AI/ML Engineer and Full Stack Developer currently working at Zeex AI
-        - Specializes in Deep Learning, Computer Vision, Generative AI, and AI-powered applications
-        
-        CURRENT ACTIVE PROJECTS:
-        - InfraSentinel: AI-Based Infrastructure, Roads & Dams Monitoring System (25% complete)
-          * Using YOLOv10, PyTorch, OpenCV, FastAPI, Next.js, PostgreSQL, AWS
-          * Features: Drone vision, crack detection, predictive maintenance
-          * Research phase focusing on infrastructure safety
-        
-        - Evolvex AI: AI-Based Career Suggestion Platform (60% complete, moving to production)
-          * Using Streamlit, Llama, Gemini, XGBoost, MongoDB
-          * Career guidance and skill recommendations
-        
-        CURRENT LEARNING:
-        - Cutting-Edge Generative AI (45% progress)
-          * Advanced LLMs, RAG systems, AI agents
-          * GPT-4, Claude, Gemini, LangChain, Vector Databases
-        
-        COMPLETED PROJECTS:
-        - AI Based Deepfake Detection System (Python, TensorFlow, EfficientNet, OpenCV, Streamlit)
-        - QuickCourt - AI-based sports booking platform (React, TypeScript, Firebase, Llama)
-        - Cybreon - AI-powered robotic brain software (Python, AI, Robotics)
-        - Weblancer Tech - Full stack freelance platform (React.js, Next.js, Three.js)
-        - Macro Mind AI - Economy prediction system
-        
-        ACHIEVEMENTS:
-        - Ranked Top 5 in Odoo Hackathon 2025
-        - Ranked Top 15 at Hack KRMU 4.0
-        - 2nd Rank in Blog Competition on deepfake detection
-        - AI+ Prompt Engineer Level 1™ certified
-        
-        CERTIFICATIONS:
-        - Google Analytics Certified
-        - Microsoft PowerBI Certified
-        - Analytics Vidhya Generative AI Certified
-        
-        SKILLS: Python, AI, Machine Learning, Deep Learning, Computer Vision, NLP, React, TypeScript, Next.js, Three.js, Node.js, MongoDB, PostgreSQL, AWS, etc.
-        
-        Answer questions helpfully and concisely. Be enthusiastic about Sujal's work.
-        If asked about projects, focus on InfraSentinel and Evolvex as current priorities.
-        Mention the development roadmap section for real-time project updates.
-      `;
+      // Create enhanced context about the portfolio with strict boundaries
+      const portfolioContext = `You are Eranix AI, an intelligent assistant for Sujal Talreja's portfolio website.
+
+CRITICAL RULES:
+1. ONLY answer questions about Sujal Talreja, his projects, skills, achievements, and career
+2. Keep responses SHORT and CONCISE (2-3 sentences maximum)
+3. If asked ANYTHING outside the portfolio scope, politely redirect: "I can only answer questions about Sujal's portfolio. Ask me about his projects, skills, or achievements!"
+4. DO NOT answer: general knowledge, coding help, other people, current events, math, science, or any non-portfolio topics
+5. Be friendly but brief
+
+Portfolio Information:
+- AI/ML Engineer at Zeex AI
+- Skills: Python, AI/ML, Deep Learning, Computer Vision, NLP, React, TypeScript, Next.js, Three.js, Node.js, MongoDB, PostgreSQL, AWS
+
+ACTIVE PROJECTS:
+- InfraSentinel: AI Infrastructure monitoring (YOLOv10, PyTorch, OpenCV, FastAPI, Next.js)
+- Evolvex AI: Career suggestion platform (Streamlit, Llama, Gemini, XGBoost)
+
+COMPLETED PROJECTS:
+- Deepfake Detection System (TensorFlow, EfficientNet)
+- QuickCourt: Sports booking platform (React, Firebase, Llama)
+- Cybreon: AI robotics software
+- Weblancer Tech: Freelance platform (React, Next.js, Three.js)
+
+ACHIEVEMENTS:
+- Top 5 in Odoo Hackathon 2025
+- Top 15 at Hack KRMU 4.0
+- AI+ Prompt Engineer Level 1™ certified
+- Google Analytics & PowerBI certified
+
+Contact: LinkedIn, GitHub (check portfolio)
+
+Keep answers brief and portfolio-focused!`;
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -131,9 +200,9 @@ const ChatBot = () => {
             { role: 'system', content: portfolioContext },
             ...newMessages.map(msg => ({ role: msg.role, content: msg.content }))
           ],
-          temperature: 0.7,
-          max_tokens: 512,
-          top_p: 1,
+          temperature: 0.5, // Lower temperature for more focused responses
+          max_tokens: 150, // Reduced from 512 for shorter responses
+          top_p: 0.9,
           stream: false
         })
       });
@@ -226,6 +295,16 @@ const ChatBot = () => {
               </button>
             </div>
 
+            {/* Rate Limit Warning */}
+            {remainingRequests <= 3 && remainingRequests > 0 && (
+              <div className="bg-yellow-900/30 border-b border-yellow-600/30 px-4 py-2 flex items-center gap-2">
+                <AlertTriangle size={14} className="text-yellow-400" />
+                <p className="text-xs text-yellow-300">
+                  {remainingRequests} request{remainingRequests !== 1 ? 's' : ''} remaining this hour
+                </p>
+              </div>
+            )}
+
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message, index) => (
@@ -238,8 +317,8 @@ const ChatBot = () => {
                 >
                   <div
                     className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${message.role === 'user'
-                        ? 'bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100'
-                        : 'bg-gradient-to-br from-gray-700 to-gray-800 text-gray-200'
+                      ? 'bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100'
+                      : 'bg-gradient-to-br from-gray-700 to-gray-800 text-gray-200'
                       }`}
                   >
                     {message.content}
@@ -297,7 +376,7 @@ const ChatBot = () => {
                       className="text-xs bg-[rgba(192,192,192,0.1)] hover:bg-[rgba(192,192,192,0.2)] border border-[rgba(192,192,192,0.2)] rounded-full px-3 py-1.5 text-gray-300 transition-all"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      disabled={isLoading}
+                      disabled={isLoading || rateLimitReached}
                     >
                       {question}
                     </motion.button>
@@ -314,13 +393,13 @@ const ChatBot = () => {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask about Sujal's work..."
+                  placeholder={rateLimitReached ? "Rate limit reached..." : "Ask about Sujal's work..."}
                   className="flex-1 bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-1 focus:ring-gray-500"
-                  disabled={isLoading}
+                  disabled={isLoading || rateLimitReached}
                 />
                 <motion.button
                   onClick={() => sendMessage()}
-                  disabled={isLoading || !inputValue.trim()}
+                  disabled={isLoading || !inputValue.trim() || rateLimitReached}
                   className="bg-gradient-to-br from-gray-600 to-gray-800 border border-[rgba(192,192,192,0.3)] rounded-lg p-2 text-gray-300 hover:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
