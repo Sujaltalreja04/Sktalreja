@@ -7,9 +7,8 @@ export const AboutSection = () => {
   const [ref, isInView] = useInView();
   const { scrollYProgress } = useScroll();
   const { isSmallScreen } = useResponsive();
-  
-  // Parallax effect for background elements
-  const parallaxY = scrollYProgress;
+
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -41,41 +40,23 @@ export const AboutSection = () => {
 
   const experienceItems = [
     {
-      role: 'CTO & Co-founder',
-      company: 'Cybreon',
-      period: 'Present',
-      description: 'Co-founded Cybreon to pioneer advanced AI hardware and software solutions for robotics. Directed all engineering and research efforts, translating the company\'s vision into a disruptive technology architecture.',
+      role: 'Founder',
+      company: 'Zyntral AI',
+      period: 'Oct 2024 - Present',
+      description: 'Founded Zyntral AI to build next-generation AI solutions and drive innovation in artificial intelligence. Leading the vision, strategy, and execution of cutting-edge AI products.',
       achievements: [
-        'Pioneered Next-Generation Architecture: Led the overall technology architecture, research, and implementation of a novel Digital Brain system designed to automate robot training',
-        'Innovation & Security Integration: Combined AI innovation with security intelligence to create high-impact, next-generation digital products',
-        'Product Development & Delivery: Managed the product development lifecycle from concept to execution, ensuring the successful delivery of cutting-edge AI-driven solutions'
+        'Established AI-first company from the ground up',
+        'Developed strategic roadmap for AI product suite',
+        'Built high-performing team focused on AI innovation',
+        'Created scalable architecture for AI-driven solutions'
       ],
-      skillsGained: ['Entrepreneurship', 'Leadership', 'Product Management', 'AI Hardware Development', 'Strategic Vision'],
+      skillsGained: ['Entrepreneurship', 'Leadership', 'Strategic Planning', 'AI Product Development', 'Business Development'],
       icon: Zap,
       techStack: [
         { name: 'AI/ML', icon: Brain, level: 'Expert' },
-        { name: 'Neuromorphic Chips', icon: Cpu, level: 'Advanced' },
-        { name: 'Robotics', icon: Cpu, level: 'Expert' },
-        { name: 'Security Intelligence', icon: Server, level: 'Advanced' }
-      ]
-    },
-    {
-      role: 'Freelance Developer',
-      company: 'Independent',
-      period: '11+ months',
-      description: 'Python development, data analysis, and full-stack applications for various clients.',
-      achievements: [
-        'Delivered 12+ projects on time',
-        'Maintained 98% client satisfaction',
-        'Grew freelance income by 150%'
-      ],
-      skillsGained: ['Full-Stack Development', 'Entrepreneurship', 'English Communication'],
-      icon: Users,
-      techStack: [
-        { name: 'React', icon: Code, level: 'Expert' },
-        { name: 'Node.js', icon: Server, level: 'Advanced' },
-        { name: 'Python', icon: Code, level: 'Expert' },
-        { name: 'Git', icon: Workflow, level: 'Expert' }
+        { name: 'Product Strategy', icon: Cpu, level: 'Expert' },
+        { name: 'Cloud Architecture', icon: Server, level: 'Advanced' },
+        { name: 'Team Leadership', icon: Users, level: 'Expert' }
       ]
     },
     {
@@ -178,7 +159,7 @@ export const AboutSection = () => {
                 ABOUT ME
               </h2>
 
-              <motion.div 
+              <motion.div
                 className="backdrop-blur-md bg-[rgba(26,26,26,0.5)] border border-[rgba(192,192,192,0.2)] rounded-xl p-6 mb-6"
                 whileHover={{
                   boxShadow: '0 0 30px rgba(192, 192, 192, 0.2)',
@@ -189,7 +170,7 @@ export const AboutSection = () => {
                 </p>
 
                 <p className="text-gray-300 text-base md:text-lg mb-4 leading-relaxed">
-                  I've completed my B.Sc. in Information Technology and am currently pursuing an M.Sc. in Artificial Intelligence & Machine Learning at Ganpat University. I'm also the CTO & Co-founder of Cybreon, pioneering advanced AI hardware and software solutions for robotics.
+                  I've completed my B.Sc. in Information Technology and am currently pursuing an M.Sc. in Artificial Intelligence & Machine Learning at Ganpat University. I'm also the Founder of Zyntral AI, building next-generation AI solutions and driving innovation in artificial intelligence.
                 </p>
 
                 <p className="text-gray-300 text-base md:text-lg leading-relaxed">
@@ -285,8 +266,8 @@ export const AboutSection = () => {
                           </h5>
                           <div className="flex flex-wrap gap-2">
                             {exp.skillsGained.map((skill, i) => (
-                              <span 
-                                key={i} 
+                              <span
+                                key={i}
                                 className="text-xs px-2 py-1 rounded-full bg-[rgba(192,192,192,0.1)] text-gray-300 border border-[rgba(192,192,192,0.2)]"
                               >
                                 {skill}
@@ -343,100 +324,195 @@ export const AboutSection = () => {
               </div>
             </div>
 
-            {/* Tech Stack Evolution Visualization */}
+            {/* Enhanced Dynamic Tech Stack Evolution Visualization */}
             <div className="mt-8">
               <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-200 flex items-center gap-2" style={{ fontFamily: 'Orbitron, sans-serif' }}>
                 <Cpu className="text-gray-400" />
                 Tech Stack Evolution
               </h3>
-              
+
               <div className="backdrop-blur-md bg-[rgba(26,26,26,0.5)] border border-[rgba(192,192,192,0.2)] rounded-xl p-5">
-                <p className="text-gray-400 text-sm mb-4">
-                  My technical expertise has evolved significantly across different domains:
+                <p className="text-gray-400 text-sm mb-6">
+                  My technical expertise has evolved significantly across different roles. Hover over markers to see exact skill levels.
                 </p>
-                
-                <div className="space-y-5">
-                  {techEvolution.map((tech, index) => {
+
+                <div className="space-y-6">
+                  {techEvolution.map((tech, techIndex) => {
                     const TechIcon = tech.icon;
+                    const currentLevel = tech.levels[tech.levels.length - 1];
+                    const maxLevel = Math.max(...tech.levels);
+
                     return (
-                      <div key={index} className="space-y-2">
+                      <motion.div
+                        key={techIndex}
+                        className="space-y-3"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                        transition={{ duration: 0.6, delay: techIndex * 0.1 }}
+                      >
+                        {/* Header with icon, name, and current level */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <TechIcon className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-300 text-sm font-medium">{tech.name}</span>
+                            <TechIcon className="w-5 h-5 text-gray-300" />
+                            <span className="text-gray-200 text-sm font-semibold">{tech.name}</span>
                           </div>
-                          <span className="text-xs text-gray-500">
-                            {tech.levels[tech.levels.length - 1]}%
-                          </span>
-                        </div>
-                        
-                        <div className="relative h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                          <div className="absolute inset-0 flex">
-                            {tech.levels.map((level, i) => (
-                              <motion.div
-                                key={i}
-                                className="h-full"
-                                style={{
-                                  width: `${100 / tech.levels.length}%`,
-                                  background: `linear-gradient(90deg, 
-                                    ${i === 0 ? '#4b5563' : i === 1 ? '#6b7280' : '#9ca3af'} 0%, 
-                                    ${i === 0 ? '#6b7280' : i === 1 ? '#9ca3af' : '#d1d5db'} 100%)`
-                                }}
-                                initial={{ width: 0 }}
-                                animate={isInView ? { width: `${100 / tech.levels.length}%` } : { width: 0 }}
-                                transition={{ duration: 1, delay: 1 + index * 0.2 + i * 0.1 }}
-                              />
-                            ))}
-                          </div>
-                          
-                          {/* Progress markers for each role */}
-                          <div className="absolute inset-0 flex">
-                            {tech.levels.map((level, i) => (
-                              <motion.div
-                                key={i}
-                                className="h-full flex flex-col items-center"
-                                style={{ width: `${100 / tech.levels.length}%` }}
-                                initial={{ opacity: 0 }}
-                                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                                transition={{ duration: 0.5, delay: 1.5 + index * 0.2 + i * 0.1 }}
+                          <motion.div
+                            className="flex items-center gap-2"
+                            animate={currentLevel === maxLevel ? {
+                              scale: [1, 1.1, 1],
+                            } : {}}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              repeatDelay: 1
+                            }}
+                          >
+                            <span className="text-xs text-gray-400">Current:</span>
+                            <span className="text-sm font-bold bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text text-transparent">
+                              {currentLevel}%
+                            </span>
+                            {currentLevel === maxLevel && (
+                              <motion.span
+                                className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 2, repeat: Infinity }}
                               >
-                                <div 
-                                  className="w-1 bg-gray-300 rounded-full"
-                                  style={{ height: `${level}%` }}
-                                />
-                                <div className="w-2 h-2 rounded-full bg-gray-300 -mt-1" />
-                              </motion.div>
-                            ))}
+                                Peak
+                              </motion.span>
+                            )}
+                          </motion.div>
+                        </div>
+
+                        {/* Enhanced Progress Bar Container */}
+                        <div className="relative h-8 bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] rounded-lg overflow-hidden border border-[rgba(192,192,192,0.1)]">
+                          {/* Background gradient effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-[rgba(192,192,192,0.03)] to-transparent"
+                            animate={{ x: [-200, 800] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                          />
+
+                          {/* Animated progress segments */}
+                          <div className="absolute inset-0 flex">
+                            {tech.levels.map((level, roleIndex) => {
+                              const segmentWidth = 100 / tech.levels.length;
+                              const gradientColors = [
+                                ['#4b5563', '#6b7280'], // Founder - Gray
+                                ['#6b7280', '#9ca3af'], // Data - Light Gray  
+                                ['#9ca3af', '#d1d5db'], // AI - Lighter Gray
+                              ];
+                              const colors = gradientColors[roleIndex] || gradientColors[2];
+
+                              return (
+                                <motion.div
+                                  key={roleIndex}
+                                  className="h-full relative group cursor-pointer"
+                                  style={{ width: `${segmentWidth}%` }}
+                                  initial={{ scaleY: 0 }}
+                                  animate={isInView ? { scaleY: 1 } : { scaleY: 0 }}
+                                  transition={{
+                                    duration: 0.8,
+                                    delay: 1 + techIndex * 0.2 + roleIndex * 0.15,
+                                    ease: "easeOut"
+                                  }}
+                                >
+                                  {/* Progress fill */}
+                                  <motion.div
+                                    className="absolute bottom-0 left-0 right-0 rounded-sm"
+                                    style={{
+                                      height: `${level}%`,
+                                      background: `linear-gradient(180deg, ${colors[0]} 0%, ${colors[1]} 100%)`,
+                                      boxShadow: level > 0 ? `0 0 10px ${colors[1]}40` : 'none'
+                                    }}
+                                    whileHover={{
+                                      scale: 1.05,
+                                      boxShadow: `0 0 20px ${colors[1]}80`
+                                    }}
+                                  />
+
+                                  {/* Skill level marker at top */}
+                                  {level > 0 && (
+                                    <motion.div
+                                      className="absolute left-1/2 -translate-x-1/2 z-10"
+                                      style={{ bottom: `${level}%` }}
+                                      initial={{ scale: 0 }}
+                                      animate={isInView ? { scale: 1 } : { scale: 0 }}
+                                      transition={{
+                                        duration: 0.3,
+                                        delay: 1.5 + techIndex * 0.2 + roleIndex * 0.15
+                                      }}
+                                    >
+                                      <motion.div
+                                        className="w-3 h-3 rounded-full bg-gray-200 border-2 border-[#0a0a0a] shadow-lg"
+                                        whileHover={{ scale: 1.5 }}
+                                        animate={roleIndex === tech.levels.length - 1 && currentLevel === maxLevel ? {
+                                          boxShadow: ['0 0 0px #d1d5db', '0 0 15px #d1d5db', '0 0 0px #d1d5db']
+                                        } : {}}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                      />
+
+                                      {/* Tooltip on hover */}
+                                      <motion.div
+                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                                        initial={{ y: 5 }}
+                                        whileHover={{ y: 0 }}
+                                      >
+                                        <div className="bg-[rgba(26,26,26,0.95)] backdrop-blur-md border border-[rgba(192,192,192,0.3)] rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-xl">
+                                          <div className="font-semibold text-gray-200">{experienceItems[roleIndex]?.company || 'Role'}</div>
+                                          <div className="text-gray-400">{tech.name}: <span className="text-gray-200 font-bold">{level}%</span></div>
+                                        </div>
+                                      </motion.div>
+                                    </motion.div>
+                                  )}
+                                </motion.div>
+                              );
+                            })}
                           </div>
                         </div>
-                        
-                        {/* Role labels - now dynamically generated from experienceItems */}
-                        <div className="flex text-xs text-gray-500 justify-between px-1">
+
+                        {/* Role labels with company names */}
+                        <div className="flex justify-between text-xs text-gray-500 px-1">
                           {experienceItems.map((exp, i) => (
-                            <span key={i}>{exp.role.split(' ')[0]}</span>
+                            <motion.span
+                              key={i}
+                              className="text-center hover:text-gray-300 transition-colors cursor-default"
+                              whileHover={{ scale: 1.1 }}
+                            >
+                              {exp.company}
+                            </motion.span>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
-                
-                <div className="mt-6 pt-4 border-t border-gray-700">
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-                      <span className="text-xs text-gray-500">Entry</span>
+
+                {/* Enhanced Legend */}
+                <motion.div
+                  className="mt-6 pt-4 border-t border-gray-700"
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ delay: 2 }}
+                >
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 border-2 border-gray-800"></div>
+                      <span className="text-xs text-gray-400">Entry Level (0-40%)</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                      <span className="text-xs text-gray-500">Intermediate</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 border-2 border-gray-800"></div>
+                      <span className="text-xs text-gray-400">Intermediate (41-70%)</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                      <span className="text-xs text-gray-500">Advanced</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 border-2 border-gray-800"></div>
+                      <span className="text-xs text-gray-400">Advanced (71-89%)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 border-2 border-gray-800 shadow-lg"></div>
+                      <span className="text-xs text-gray-400">Expert (90%+)</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
