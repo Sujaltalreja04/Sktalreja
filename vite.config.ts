@@ -12,6 +12,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         museum: resolve(__dirname, 'museum3d.html'),
+        tech: resolve(__dirname, 'tech3d.html'),
       },
       output: {
         manualChunks: {

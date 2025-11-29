@@ -1,0 +1,161 @@
+/* Hide default cursor */
+* {
+    cursor: none !important;
+}
+
+body, body * {
+    cursor: none !important;
+}
+
+/* Cursor Ring */
+.cursor-ring {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ff4500;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out, box-shadow 0.15s ease-out;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.4), inset 0 0 5px rgba(255, 69, 0, 0.2);
+    opacity: 0.7;
+    mix-blend-mode: screen;
+}
+
+.cursor-ring::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+    animation: pulse-ring 2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+/* Cursor Dot */
+.cursor-dot {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: #ff4500;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000000;
+    transition: transform 0.1s ease-out, background 0.2s ease-out, box-shadow 0.2s ease-out;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.8);
+    mix-blend-mode: screen;
+}
+
+/* Glow Effect */
+.cursor-glow {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255, 69, 0, 0.3) 0%, rgba(255, 107, 0, 0.15) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999998;
+    transform: translate(-50%, -50%);
+    filter: blur(15px);
+    animation: glow-pulse 1.5s ease-in-out infinite;
+    mix-blend-mode: screen;
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+/* Tech Corners */
+.cursor-corners-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999997;
+}
+
+.cursor-corner {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    transition: transform 0.15s ease-out;
+}
+
+.corner-line-h {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 2px;
+    background: #ff6b00;
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.8);
+    animation: corner-glow 1.2s ease-in-out infinite;
+}
+
+.corner-line-v {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 2px;
+    height: 14px;
+    background: #ff6b00;
+    box-shadow: 0 0 8px rgba(255, 107, 0, 0.8);
+    animation: corner-glow 1.2s ease-in-out infinite 0.1s;
+}
+
+@keyframes corner-glow {
+    0%, 100% {
+        opacity: 0.7;
+        box-shadow: 0 0 5px rgba(255, 107, 0, 0.6);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 12px rgba(255, 107, 0, 1);
+    }
+}
+
+/* Prevent cursor elements from blocking interactions */
+.cursor-ring,
+.cursor-dot,
+.cursor-glow,
+.cursor-corner,
+.cursor-corners-container {
+    pointer-events: none !important;
+}
+
+/* Better visibility on light backgrounds */
+@media (prefers-color-scheme: light) {
+    .cursor-ring,
+    .cursor-dot,
+    .cursor-glow,
+    .corner-line-h,
+    .corner-line-v {
+        mix-blend-mode: multiply;
+    }
+}
+
+/* Ensure smooth rendering */
+.cursor-ring,
+.cursor-dot,
+.cursor-glow,
+.cursor-corner {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}

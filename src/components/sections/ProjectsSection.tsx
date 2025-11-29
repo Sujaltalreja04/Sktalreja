@@ -296,25 +296,34 @@ export const ProjectsSection = () => {
                       )}
 
                       {/* 3D Gallery Button - Opens in New Tab for Performance */}
-                      {(index === 1 || index === 2) && (
+                      {(index === 0 || index === 1 || index === 2) && (
                         <motion.button
-                          className="w-full backdrop-blur-md bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-400/40 rounded-lg px-3 py-2 md:px-4 md:py-3 text-cyan-300 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
+                          className={`w-full backdrop-blur-md bg-gradient-to-r ${index === 0
+                              ? 'from-orange-500/20 to-red-500/20 border border-orange-400/40 text-orange-300'
+                              : 'from-cyan-500/20 to-purple-500/20 border border-cyan-400/40 text-cyan-300'
+                            } rounded-lg px-3 py-2 md:px-4 md:py-3 font-semibold flex items-center justify-center gap-2 text-sm md:text-base`}
                           whileHover={{
                             scale: 1.05,
-                            boxShadow: '0 0 30px rgba(0, 255, 255, 0.6)',
-                            background: 'linear-gradient(to right, rgba(6, 182, 212, 0.3), rgba(168, 85, 247, 0.3))',
+                            boxShadow: index === 0
+                              ? '0 0 30px rgba(255, 69, 0, 0.6)'
+                              : '0 0 30px rgba(0, 255, 255, 0.6)',
+                            background: index === 0
+                              ? 'linear-gradient(to right, rgba(255, 69, 0, 0.3), rgba(239, 68, 68, 0.3))'
+                              : 'linear-gradient(to right, rgba(6, 182, 212, 0.3), rgba(168, 85, 247, 0.3))',
                           }}
                           whileTap={{ scale: 0.95 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            const url = index === 1
-                              ? '/museum3d.html?project=quickcourt'
-                              : '/museum3d.html?project=evolvex';
+                            const url = index === 0
+                              ? '/tech3d.html'
+                              : index === 1
+                                ? '/museum3d.html?project=quickcourt'
+                                : '/museum3d.html?project=evolvex';
                             window.open(url, '_blank', 'noopener,noreferrer');
                           }}
                         >
                           <Box className="w-4 h-4" />
-                          VIEW IN 3D GALLERY
+                          VIEW IN 3D {index === 0 ? 'TECH GALLERY' : 'GALLERY'}
                         </motion.button>
                       )}
                     </div>
