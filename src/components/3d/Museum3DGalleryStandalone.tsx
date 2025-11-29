@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Html, useTexture, MeshReflectorMaterial, Environment } from '@react-three/drei';
+import { OrbitControls, Html, MeshReflectorMaterial, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
 import { Move, Eye, Info, PlayCircle, Pause, Loader2 } from 'lucide-react';
@@ -80,111 +80,33 @@ function DynamicSpotlight() {
     );
 }
 
-// Avatar System with First/Third Person Toggle & Footstep Sounds
-/*
-function AvatarSystem({
-    isThirdPerson,
-    position
-}: {
-    isThirdPerson: boolean;
-    position: THREE.Vector3;
-}) {
-    const avatarRef = useRef<THREE.Group>(null);
-    const { camera } = useThree();
-    const lastPosition = useRef(new THREE.Vector3());
-    const footstepAudio = useRef<HTMLAudioElement | null>(null);
-    const [isMoving, setIsMoving] = useState(false);
-
-    // Initialize footstep audio
-    useEffect(() => {
-        footstepAudio.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEwxMouXus2MdBjiP1fHMeS0GI3fH8N2RQAoUXrTp66hVEw==');
-        footstepAudio.current.volume = 0.3;
-    }, []);
-
-    // Update avatar position and camera
-    useFrame(() => {
-        if (!avatarRef.current) return;
-
-        // Update avatar position
-        avatarRef.current.position.copy(position);
-
-        // Camera positioning based on view mode
-        if (isThirdPerson) {
-            // Third-person: Camera behind and above avatar
-            const offset = new THREE.Vector3(0, 2, 5);
-            const targetPos = position.clone().add(offset);
-            camera.position.lerp(targetPos, 0.1);
-            camera.lookAt(position.x, position.y + 1, position.z);
-        } else {
-            // First-person: Camera at avatar eye level
-            camera.position.lerp(
-                new THREE.Vector3(position.x, position.y + 1.6, position.z),
-                0.15
-            );
-        }
-
-        // Detect movement for footsteps
-        const moved = position.distanceTo(lastPosition.current) > 0.05;
-        if (moved && !isMoving) {
-            setIsMoving(true);
-            playFootstep();
-        } else if (!moved && isMoving) {
-            setIsMoving(false);
-        }
-        lastPosition.current.copy(position);
-    });
-
-    const playFootstep = () => {
-        if (footstepAudio.current) {
-            footstepAudio.current.currentTime = 0;
-            footstepAudio.current.play().catch(() => { });
-        }
-    };
-
-    // Only show avatar in third-person mode
-    if (!isThirdPerson) return null;
-
-    return (
-        <group ref={avatarRef}>
-            <mesh position={[0, 0.9, 0]} castShadow>
-                <capsuleGeometry args={[0.3, 1.2, 16, 32]} />
-                <meshStandardMaterial
-                    color="#ff4500"
-                    metalness={0.3}
-                    roughness={0.7}
-                    emissive="#ff4500"
-                    emissiveIntensity={0.2}
-                />
-            </mesh>
-
-            <mesh position={[0, 1.8, 0]} castShadow>
-                <sphereGeometry args={[0.25, 32, 32]} />
-                <meshStandardMaterial
-                    color="#ff6b00"
-                    metalness={0.5}
-                    roughness={0.5}
-                    emissive="#ff6b00"
-                    emissiveIntensity={0.3}
-                />
-            </mesh>
-
-            <pointLight color="#ff4500" intensity={1} distance={3} />
-        </group>
-    );
-}
-*/
 function MuseumRoom({ projectImage }: { projectImage: string }) {
-    // Load texture with proper error handling via Suspense
-    const texture = useTexture(projectImage);
+    const [textureLoaded, setTextureLoaded] = useState(false);
 
-    // Configure texture for better quality
+    // Load texture with proper CORS handling
+    const loader = new THREE.TextureLoader();
+    const [loadedTexture, setLoadedTexture] = useState<THREE.Texture | null>(null);
+
     useEffect(() => {
-        if (texture) {
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
-            texture.anisotropy = 16;
-        }
-    }, [texture]);
+        loader.setCrossOrigin('anonymous');
+        loader.load(
+            projectImage,
+            (texture) => {
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.anisotropy = 16;
+                texture.needsUpdate = true;
+                texture.colorSpace = THREE.SRGBColorSpace;
+                setLoadedTexture(texture);
+                setTextureLoaded(true);
+                console.log('Texture loaded successfully:', projectImage);
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading texture:', error);
+            }
+        );
+    }, [projectImage]);
 
     return (
         <group>
@@ -206,7 +128,7 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                 />
             </mesh>
 
-            {/* Ceiling with enhanced material */}
+            {/* Ceiling */}
             <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 6, 0]}>
                 <planeGeometry args={[30, 30]} />
                 <meshStandardMaterial
@@ -216,7 +138,7 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                 />
             </mesh>
 
-            {/* Back Wall with improved gradient */}
+            {/* Back Wall */}
             <mesh position={[0, 2, -10]} receiveShadow>
                 <planeGeometry args={[30, 10]} />
                 <meshStandardMaterial
@@ -246,7 +168,7 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                 />
             </mesh>
 
-            {/* Enhanced glowing accent strips on walls */}
+            {/* Glowing accent strips on walls */}
             <mesh position={[-14.9, 4, 5]} rotation={[0, Math.PI / 2, 0]}>
                 <planeGeometry args={[30, 0.3]} />
                 <meshStandardMaterial
@@ -267,61 +189,114 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                 />
             </mesh>
 
-            {/* ENHANCED HOLOGRAM-STYLE Project Display Frame */}
+            {/* ENHANCED HOLOGRAM-STYLE Project Display Frame with GLOWING BACKGROUND */}
             <group position={[0, 1.5, -9.8]}>
-                {/* Premium Frame Border with ultra-metallic finish */}
-                <mesh position={[0, 0, 0.01]} castShadow>
-                    <boxGeometry args={[8.4, 5.4, 0.2]} />
-                    <meshStandardMaterial
-                        color="#ffffff"
-                        metalness={0.99}
-                        roughness={0.01}
-                        envMapIntensity={2.0}
-                    />
-                </mesh>
-
-                {/* Hologram Frame Glow */}
-                <mesh position={[0, 0, 0.05]}>
-                    <boxGeometry args={[8.6, 5.6, 0.05]} />
+                {/* GLOWING BACKGROUND LAYER */}
+                <mesh position={[0, 0, -0.5]}>
+                    <planeGeometry args={[10, 6.5]} />
                     <meshStandardMaterial
                         color="#ff4500"
                         emissive="#ff4500"
                         emissiveIntensity={0.6}
                         transparent
-                        opacity={0.4}
-                        toneMapped={false}
+                        opacity={0.2}
                     />
                 </mesh>
 
-                {/* Enhanced Project Image with better clarity */}
-                <mesh position={[0, 0, 0.11]}>
+                {/* Additional glow layer */}
+                <mesh position={[0, 0, -0.4]}>
+                    <planeGeometry args={[9.5, 6]} />
+                    <meshStandardMaterial
+                        color="#ff6b00"
+                        emissive="#ff6b00"
+                        emissiveIntensity={0.4}
+                        transparent
+                        opacity={0.15}
+                    />
+                </mesh>
+
+                {/* Premium Frame Border with 3D depth */}
+                <mesh position={[0, 0, 0.01]} castShadow>
+                    <boxGeometry args={[8.4, 5.4, 0.25]} />
+                    <meshStandardMaterial
+                        color="#c0c0c0"
+                        metalness={0.9}
+                        roughness={0.1}
+                        envMapIntensity={1.2}
+                    />
+                </mesh>
+
+                {/* Inner frame for depth */}
+                <mesh position={[0, 0, 0.08]}>
+                    <planeGeometry args={[8.2, 5.2]} />
+                    <meshStandardMaterial
+                        color="#1a1a1a"
+                    />
+                </mesh>
+
+                {/* Subtle frame glow */}
+                <mesh position={[0, 0, 0.09]}>
+                    <planeGeometry args={[8.3, 5.3]} />
+                    <meshStandardMaterial
+                        color="#ff4500"
+                        emissive="#ff4500"
+                        emissiveIntensity={0.3}
+                        transparent
+                        opacity={0.2}
+                    />
+                </mesh>
+
+                {/* MAIN PROJECT IMAGE */}
+                {loadedTexture && (
+                    <mesh position={[0, 0, 0.15]}>
+                        <planeGeometry args={[8, 4.5]} />
+                        <meshBasicMaterial
+                            map={loadedTexture}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                )}
+
+                {/* Loading indicator */}
+                {!loadedTexture && (
+                    <Html position={[0, 0, 0.12]} center>
+                        <div style={{
+                            color: '#ff4500',
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                        }}>
+                            Loading Image...
+                        </div>
+                    </Html>
+                )}
+
+                {/* Glass overlay for 3D effect */}
+                <mesh position={[0, 0, 0.18]}>
                     <planeGeometry args={[8, 5]} />
                     <meshStandardMaterial
-                        map={texture}
-                        toneMapped={false}
+                        transparent
+                        opacity={0.03}
+                        metalness={0.5}
+                        roughness={0.3}
                     />
                 </mesh>
 
-                {/* Enhanced spotlight array on frame */}
+                {/* Main spotlight */}
                 <spotLight
-                    position={[0, 4, 2]}
-                    angle={0.5}
-                    penumbra={0.7}
-                    intensity={4}
+                    position={[0, 5, 3]}
+                    angle={0.4}
+                    penumbra={0.8}
+                    intensity={2.5}
                     color="#ffffff"
-                    castShadow
-                    shadow-mapSize-width={2048}
-                    shadow-mapSize-height={2048}
                 />
 
-                {/* Enhanced Rim lighting */}
-                <pointLight position={[-4.5, 0, 0.5]} intensity={0.8} color="#ff4500" distance={8} />
-                <pointLight position={[4.5, 0, 0.5]} intensity={0.8} color="#ff6b00" distance={8} />
-                <pointLight position={[0, 2.5, 0.5]} intensity={0.5} color="#ffffff" distance={6} />
-                <pointLight position={[0, -2.5, 0.5]} intensity={0.5} color="#ffffff" distance={6} />
+                {/* Rim lighting */}
+                <pointLight position={[-4.5, 0, 0.5]} intensity={0.4} color="#ff4500" distance={6} />
+                <pointLight position={[4.5, 0, 0.5]} intensity={0.4} color="#ff6b00" distance={6} />
             </group>
 
-            {/* Enhanced Pedestal with hologram glow */}
+            {/* Enhanced Pedestal */}
             <group position={[0, -1, -7]}>
                 <mesh castShadow>
                     <cylinderGeometry args={[0.8, 1, 2, 32]} />
@@ -332,7 +307,6 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                         envMapIntensity={1.2}
                     />
                 </mesh>
-                {/* Enhanced Glowing top ring */}
                 <mesh position={[0, 1.05, 0]}>
                     <torusGeometry args={[0.82, 0.06, 16, 100]} />
                     <meshStandardMaterial
@@ -342,46 +316,122 @@ function MuseumRoom({ projectImage }: { projectImage: string }) {
                         toneMapped={false}
                     />
                 </mesh>
-                {/* Pulsing center light */}
                 <pointLight position={[0, 1.1, 0]} intensity={1} color="#ff4500" distance={5} />
-            </group >
+            </group>
 
-            {/* Enhanced ambient lighting spheres */}
-            < group >
-                <mesh position={[-8, 4, -8]}>
-                    <sphereGeometry args={[0.5, 32, 32]} />
-                    <meshStandardMaterial
+            {/* ENHANCED CEILING LIGHTS WITH TORCH RAYS */}
+            <group>
+                {/* LEFT CEILING ORB with Torch Ray */}
+                <group position={[-8, 4, -8]}>
+                    <mesh>
+                        <sphereGeometry args={[0.5, 32, 32]} />
+                        <meshStandardMaterial
+                            color="#ff4500"
+                            emissive="#ff4500"
+                            emissiveIntensity={3.5}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                    <pointLight intensity={3} color="#ff4500" distance={15} />
+
+                    {/* Volumetric Light Beam / Torch Ray */}
+                    <mesh position={[0, -2, 0]} rotation={[0, 0, 0]}>
+                        <coneGeometry args={[1.5, 4, 32, 1, true]} />
+                        <meshBasicMaterial
+                            color="#ff4500"
+                            transparent
+                            opacity={0.15}
+                            side={THREE.DoubleSide}
+                            depthWrite={false}
+                        />
+                    </mesh>
+
+                    {/* Spotlight for dramatic effect */}
+                    <spotLight
+                        position={[0, 0, 0]}
+                        angle={0.6}
+                        penumbra={0.8}
+                        intensity={4}
                         color="#ff4500"
-                        emissive="#ff4500"
-                        emissiveIntensity={2.5}
-                        toneMapped={false}
+                        distance={20}
+                        castShadow
                     />
-                    <pointLight intensity={2} color="#ff4500" distance={12} />
-                </mesh>
+                </group>
 
-                <mesh position={[8, 4, -8]}>
-                    <sphereGeometry args={[0.5, 32, 32]} />
-                    <meshStandardMaterial
+                {/* RIGHT CEILING ORB with Torch Ray */}
+                <group position={[8, 4, -8]}>
+                    <mesh>
+                        <sphereGeometry args={[0.5, 32, 32]} />
+                        <meshStandardMaterial
+                            color="#ff6b00"
+                            emissive="#ff6b00"
+                            emissiveIntensity={3.5}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                    <pointLight intensity={3} color="#ff6b00" distance={15} />
+
+                    {/* Volumetric Light Beam / Torch Ray */}
+                    <mesh position={[0, -2, 0]} rotation={[0, 0, 0]}>
+                        <coneGeometry args={[1.5, 4, 32, 1, true]} />
+                        <meshBasicMaterial
+                            color="#ff6b00"
+                            transparent
+                            opacity={0.15}
+                            side={THREE.DoubleSide}
+                            depthWrite={false}
+                        />
+                    </mesh>
+
+                    {/* Spotlight for dramatic effect */}
+                    <spotLight
+                        position={[0, 0, 0]}
+                        angle={0.6}
+                        penumbra={0.8}
+                        intensity={4}
                         color="#ff6b00"
-                        emissive="#ff6b00"
-                        emissiveIntensity={2.5}
-                        toneMapped={false}
+                        distance={20}
+                        castShadow
                     />
-                    <pointLight intensity={2} color="#ff6b00" distance={12} />
-                </mesh>
+                </group>
 
-                {/* Additional premium ceiling lights */}
-                <mesh position={[0, 5.8, 0]}>
-                    <sphereGeometry args={[0.4, 32, 32]} />
-                    <meshStandardMaterial
+                {/* CENTER CEILING LIGHT with Torch Ray */}
+                <group position={[0, 5.8, 0]}>
+                    <mesh>
+                        <sphereGeometry args={[0.4, 32, 32]} />
+                        <meshStandardMaterial
+                            color="#ffffff"
+                            emissive="#ffffff"
+                            emissiveIntensity={2.5}
+                            toneMapped={false}
+                        />
+                    </mesh>
+                    <pointLight intensity={3.5} color="#ffffff" distance={20} />
+
+                    {/* Volumetric Light Beam / Torch Ray */}
+                    <mesh position={[0, -2.5, 0]} rotation={[0, 0, 0]}>
+                        <coneGeometry args={[2, 5, 32, 1, true]} />
+                        <meshBasicMaterial
+                            color="#ffffff"
+                            transparent
+                            opacity={0.1}
+                            side={THREE.DoubleSide}
+                            depthWrite={false}
+                        />
+                    </mesh>
+
+                    {/* Spotlight for dramatic effect */}
+                    <spotLight
+                        position={[0, 0, 0]}
+                        angle={0.5}
+                        penumbra={0.9}
+                        intensity={5}
                         color="#ffffff"
-                        emissive="#ffffff"
-                        emissiveIntensity={1.5}
-                        toneMapped={false}
+                        distance={25}
+                        castShadow
                     />
-                    <pointLight intensity={2.5} color="#ffffff" distance={18} />
-                </mesh>
-            </group >
+                </group>
+            </group>
         </group >
     );
 }
@@ -428,13 +478,11 @@ function ClickableInfoPoint({
                 />
             </mesh>
 
-            {/* Pulsing ring */}
             <mesh rotation={[Math.PI / 2, 0, 0]}>
                 <ringGeometry args={[0.2, 0.25, 32]} />
                 <meshBasicMaterial color={color} transparent opacity={hovered ? 0.8 : 0.4} />
             </mesh>
 
-            {/* Info panel when clicked or hovered */}
             {(clicked || hovered) && (
                 <Html distanceFactor={4} position={[0, 0.5, 0]}>
                     <div style={{
@@ -471,11 +519,11 @@ function ClickableInfoPoint({
     );
 }
 
-// Auto-Tour Camera Animation
+// Auto-Tour Camera Animation - ENHANCED for complete museum coverage
 function AutoTourCamera({ isActive, onComplete }: { isActive: boolean; onComplete: () => void }) {
     const { camera } = useThree();
     const startTime = useRef(0);
-    const tourDuration = 15; // 15 seconds tour
+    const tourDuration = 30; // Increased to 30 seconds for comprehensive tour
 
     useEffect(() => {
         if (isActive) {
@@ -494,34 +542,75 @@ function AutoTourCamera({ isActive, onComplete }: { isActive: boolean; onComplet
             return;
         }
 
-        // Cinematic camera path
-        const angle = progress * Math.PI * 2;
-        const radius = 8 - progress * 3; // Move closer
+        // Divide tour into segments for different viewpoints
+        const segment = Math.floor(progress * 6); // 6 segments
+        const segmentProgress = (progress * 6) % 1;
 
-        camera.position.x = Math.sin(angle) * radius;
-        camera.position.z = 10 - progress * 15; // Move forward
-        camera.position.y = 1 + Math.sin(progress * Math.PI) * 2; // Arc up and down
+        switch (segment) {
+            case 0: // Start: Entrance view
+                camera.position.x = 0 + Math.sin(segmentProgress * Math.PI) * 2;
+                camera.position.y = 1.5;
+                camera.position.z = 12 - segmentProgress * 5;
+                camera.lookAt(0, 1.5, -9.8);
+                break;
 
-        // Look at the main display
-        camera.lookAt(0, 1.5, -9.8);
+            case 1: // Circle around the image frame (right side)
+                const angle1 = segmentProgress * Math.PI;
+                camera.position.x = Math.sin(angle1) * 6;
+                camera.position.y = 1.5 + Math.sin(segmentProgress * Math.PI) * 1;
+                camera.position.z = -9.8 + Math.cos(angle1) * 6;
+                camera.lookAt(0, 1.5, -9.8);
+                break;
+
+            case 2: // Look at left info point and ceiling light
+                camera.position.x = -3 + segmentProgress * 1.5;
+                camera.position.y = 2 + segmentProgress * 1;
+                camera.position.z = -3;
+                camera.lookAt(-4, 2, -6); // Look at left info point
+                break;
+
+            case 3: // Look at right info point and ceiling
+                camera.position.x = 3 - segmentProgress * 1.5;
+                camera.position.y = 3;
+                camera.position.z = -3;
+                const lookX = segmentProgress < 0.5 ? 4 : 0;
+                const lookY = segmentProgress < 0.5 ? 2 : 5.8;
+                const lookZ = segmentProgress < 0.5 ? -6 : 0;
+                camera.lookAt(lookX, lookY, lookZ);
+                break;
+
+            case 4: // Top-down view showing torch rays
+                camera.position.x = Math.sin(segmentProgress * Math.PI * 2) * 4;
+                camera.position.y = 5 - segmentProgress * 1;
+                camera.position.z = -5 + Math.cos(segmentProgress * Math.PI * 2) * 4;
+                camera.lookAt(0, 1.5, -9.8);
+                break;
+
+            case 5: // Final: Dramatic angle and zoom to image
+                const finalAngle = segmentProgress * Math.PI / 2;
+                camera.position.x = Math.sin(finalAngle) * 8;
+                camera.position.y = 2 - segmentProgress * 0.5;
+                camera.position.z = -2 - segmentProgress * 5;
+                camera.lookAt(0, 1.5, -9.8);
+                break;
+        }
     });
 
     return null;
 }
 
-// Loading Fallback Component with Premium Design
+// Loading Fallback Component
 function LoadingFallback() {
     return (
         <Html center>
             <div className="flex flex-col items-center justify-center gap-4" style={{ fontFamily: 'Orbitron, sans-serif' }}>
                 <Loader2 className="w-12 h-12 text-red-500 animate-spin" />
                 <div className="text-red-400 text-lg font-semibold">Loading 3D Gallery...</div>
-                <div className="text-gray-400 text-sm">Preparing hologram display</div>
+                <div className="text-gray-400 text-sm">Preparing holographic display</div>
             </div>
         </Html>
     );
 }
-
 
 // Camera Controller for manual navigation
 function CameraController({ enabled }: { enabled: boolean }) {
@@ -563,7 +652,6 @@ function CameraController({ enabled }: { enabled: boolean }) {
         const right = new THREE.Vector3();
         right.crossVectors(camera.up, direction).normalize();
 
-        // WASD Controls
         if (keys.has('w') || keys.has('arrowup')) {
             camera.position.addScaledVector(direction, -speed);
         }
@@ -577,10 +665,7 @@ function CameraController({ enabled }: { enabled: boolean }) {
             camera.position.addScaledVector(right, -speed);
         }
 
-        // Keep camera at reasonable height
         camera.position.y = Math.max(0, Math.min(4, camera.position.y));
-
-        // Boundary constraints
         camera.position.x = Math.max(-12, Math.min(12, camera.position.x));
         camera.position.z = Math.max(-5, Math.min(15, camera.position.z));
     });
@@ -591,21 +676,31 @@ function CameraController({ enabled }: { enabled: boolean }) {
 export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps> = ({ project }) => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [autoTourActive, setAutoTourActive] = useState(false);
-    // const [isThirdPerson, setIsThirdPerson] = useState(false);
-    // const cameraPosition = useRef(new THREE.Vector3(0, 1, 10));
+    const audioRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setShowInstructions(false), 6000);
         return () => clearTimeout(timer);
     }, []);
 
+    // Handle background music for QuickCourt project
+    useEffect(() => {
+        if (autoTourActive && project.title === 'QuickCourt') {
+            // Music will start via iframe when auto-tour begins
+            if (audioRef.current) {
+                audioRef.current.style.display = 'block';
+            }
+        } else {
+            // Hide iframe when tour stops
+            if (audioRef.current) {
+                audioRef.current.style.display = 'none';
+            }
+        }
+    }, [autoTourActive, project.title]);
+
     const toggleAutoTour = () => {
         setAutoTourActive(!autoTourActive);
     };
-
-    // const toggleView = () => {
-    //     setIsThirdPerson(!isThirdPerson);
-    // };
 
     return (
         <div className="fixed inset-0 bg-black" style={{ fontFamily: 'Orbitron, sans-serif' }}>
@@ -635,20 +730,6 @@ export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps>
                 {autoTourActive ? <Pause size={20} /> : <PlayCircle size={20} />}
                 {autoTourActive ? 'Stop Auto-Tour' : 'Start Auto-Tour'}
             </motion.button>
-
-            {/* Camera View Toggle Button - DISABLED FOR NOW */}
-            {/* <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleView}
-                className={`absolute top-48 left-6 z-50 px-6 py-3 backdrop-blur-md border rounded-xl font-semibold transition-all flex items-center gap-2 ${isThirdPerson
-                    ? 'bg-orange-500/30 border-orange-400/60 text-orange-300'
-                    : 'bg-[rgba(26,26,26,0.8)] border-[rgba(192,192,192,0.3)] text-gray-300'
-                    }`}
-            >
-                <Eye size={20} />
-                {isThirdPerson ? 'Third Person' : 'First Person'}
-            </motion.button> */}
 
             {/* Instructions Panel */}
             {showInstructions && !autoTourActive && (
@@ -712,15 +793,11 @@ export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps>
                 </motion.button>
             </div>
 
-            {/* 3D Canvas with Suspense for better loading */}
-            <Canvas shadows>
+            {/* 3D Canvas */}
+            <Canvas shadows camera={{ position: [3, 2, 12], fov: 60 }}>
                 <Suspense fallback={<LoadingFallback />}>
-                    <PerspectiveCamera makeDefault position={[0, 1, 10]} fov={75} />
-
-                    {/* Premium Environment Map */}
                     <Environment preset="night" />
 
-                    {/* Enhanced Lighting Setup */}
                     <ambientLight intensity={0.2} />
                     <directionalLight
                         position={[10, 10, 5]}
@@ -730,28 +807,17 @@ export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps>
                         shadow-mapSize-height={2048}
                     />
 
-                    {/* Dynamic spotlight */}
                     <DynamicSpotlight />
 
-                    {/* Key lights */}
                     <pointLight position={[0, 6, 0]} intensity={1.2} color="#ffffff" />
                     <pointLight position={[-8, 4, -8]} intensity={1} color="#ff4500" distance={15} />
                     <pointLight position={[8, 4, -8]} intensity={1} color="#ff6b00" distance={15} />
                     <pointLight position={[0, 2, 5]} intensity={0.5} color="#ffffff" />
 
-                    {/* Museum Environment */}
                     <MuseumRoom projectImage={project.image} />
 
-                    {/* Floating Particles */}
                     <FloatingParticles />
 
-                    {/* Avatar System - DISABLED FOR NOW */}
-                    {/* <AvatarSystem
-                        isThirdPerson={isThirdPerson}
-                        position={cameraPosition.current}
-                    /> */}
-
-                    {/* Clickable Info Points */}
                     <ClickableInfoPoint
                         position={[-4, 2, -6]}
                         label="Tech Stack"
@@ -771,7 +837,6 @@ export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps>
                         color="#ffaa00"
                     />
 
-                    {/* Camera Controls */}
                     {autoTourActive ? (
                         <AutoTourCamera
                             isActive={autoTourActive}
@@ -780,21 +845,43 @@ export const Museum3DGalleryStandalone: React.FC<Museum3DGalleryStandaloneProps>
                     ) : (
                         <>
                             <OrbitControls
-                                enablePan={false}
+                                enablePan={true}
                                 enableZoom={true}
-                                minDistance={2}
-                                maxDistance={15}
-                                maxPolarAngle={Math.PI / 2}
-                                target={[0, 1, -5]}
+                                minDistance={3}
+                                maxDistance={20}
+                                maxPolarAngle={Math.PI / 1.8}
+                                minPolarAngle={Math.PI / 6}
+                                target={[0, 1.5, -5]}
+                                enableDamping={true}
+                                dampingFactor={0.05}
                             />
                             <CameraController enabled={!autoTourActive} />
                         </>
                     )}
 
-                    {/* Atmospheric fog */}
                     <fog attach="fog" args={['#0a0a0a', 15, 30]} />
                 </Suspense>
             </Canvas>
+
+            {/* Hidden YouTube Audio Player for QuickCourt Auto-Tour */}
+            {project.title === 'QuickCourt' && (
+                <iframe
+                    ref={audioRef}
+                    style={{
+                        display: 'none',
+                        position: 'fixed',
+                        bottom: '-100px',
+                        left: '-100px',
+                        width: '1px',
+                        height: '1px',
+                        border: 'none',
+                        pointerEvents: 'none'
+                    }}
+                    src={`https://www.youtube.com/embed/MMi-tS-k358?autoplay=${autoTourActive ? '1' : '0'}&loop=1&playlist=MMi-tS-k358&controls=0&showinfo=0&modestbranding=1&rel=0`}
+                    allow="autoplay; encrypted-media"
+                    title="Background Music"
+                />
+            )}
         </div>
     );
 };

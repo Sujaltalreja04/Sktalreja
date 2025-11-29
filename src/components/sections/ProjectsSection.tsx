@@ -296,7 +296,7 @@ export const ProjectsSection = () => {
                       )}
 
                       {/* 3D Gallery Button - Opens in New Tab for Performance */}
-                      {index === 2 && (
+                      {(index === 1 || index === 2) && (
                         <motion.button
                           className="w-full backdrop-blur-md bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-400/40 rounded-lg px-3 py-2 md:px-4 md:py-3 text-cyan-300 font-semibold flex items-center justify-center gap-2 text-sm md:text-base"
                           whileHover={{
@@ -307,7 +307,10 @@ export const ProjectsSection = () => {
                           whileTap={{ scale: 0.95 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open('/museum3d.html', '_blank', 'noopener,noreferrer');
+                            const url = index === 1
+                              ? '/museum3d.html?project=quickcourt'
+                              : '/museum3d.html?project=evolvex';
+                            window.open(url, '_blank', 'noopener,noreferrer');
                           }}
                         >
                           <Box className="w-4 h-4" />
