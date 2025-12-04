@@ -3,7 +3,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, MeshReflectorMaterial, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { Move, Eye, Info, PlayCircle, Pause, Loader2 } from 'lucide-react';
+import { Move, Eye, Info, Hand, Loader2 } from 'lucide-react';
+import { HandGestureController } from './HandGestureController';
 
 interface Tech3DGalleryStandaloneProps {
     project: {
@@ -776,10 +777,59 @@ function CameraController({ enabled }: { enabled: boolean }) {
     return null;
 }
 
+// Gesture Camera Control
+function GestureCamera({ gestureData }: { gestureData: any }) {
+    const { camera } = useThree();
+
+    useFrame(() => {
+        if (!gestureData) return;
+
+        // Apply rotation (orbit)
+        if (gestureData.rotation) {
+            const radius = Math.sqrt(camera.position.x ** 2 + camera.position.z ** 2);
+            const angle = Math.atan2(camera.position.x, camera.position.z);
+
+            // Smooth rotation
+            const targetAngle = angle + gestureData.rotation.y * 0.005;
+            camera.position.x = radius * Math.sin(targetAngle);
+            camera.position.z = radius * Math.cos(targetAngle);
+
+            // Vertical rotation (pitch)
+            camera.position.y = Math.max(1, Math.min(8, camera.position.y - gestureData.rotation.x * 0.05));
+
+            camera.lookAt(0, 1.5, -9.8);
+        }
+
+        // Apply zoom
+        if (gestureData.zoom) {
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            camera.position.addScaledVector(direction, gestureData.zoom * 0.1);
+        }
+
+        // Apply pan
+        if (gestureData.pan) {
+            const right = new THREE.Vector3();
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            right.crossVectors(camera.up, direction).normalize();
+
+            camera.position.addScaledVector(right, -gestureData.pan.x * 0.05);
+            camera.position.y += gestureData.pan.y * 0.05;
+        }
+    });
+
+    return null;
+}
+
 export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = ({ project }) => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [autoTourActive, setAutoTourActive] = useState(false);
+    const [gestureControlEnabled, setGestureControlEnabled] = useState(false);
+    const [gestureData, setGestureData] = useState({ rotation: { x: 0, y: 0 }, zoom: 0, pan: { x: 0, y: 0 }, gesture: 'none' as any });
+    const orbitControlsRef = useRef<any>(null);
     const audioRef = useRef<HTMLIFrameElement>(null);
+    const fistHoldTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setShowInstructions(false), 6000);
@@ -805,6 +855,39 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
         setAutoTourActive(!autoTourActive);
     };
 
+    const toggleGestureControl = () => {
+        setGestureControlEnabled(!gestureControlEnabled);
+    };
+
+    // Handle gesture changes
+    const handleGestureChange = (data: any) => {
+        setGestureData(data);
+
+        // Handle special gestures
+        if (data.gesture === 'fist') {
+            // Reset view on fist (hold for 1 second)
+            if (!fistHoldTimer.current) {
+                fistHoldTimer.current = setTimeout(() => {
+                    if (orbitControlsRef.current) {
+                        orbitControlsRef.current.reset();
+                    }
+                    fistHoldTimer.current = null;
+                }, 1000);
+            }
+        } else {
+            // Clear timer if gesture changes
+            if (fistHoldTimer.current) {
+                clearTimeout(fistHoldTimer.current);
+                fistHoldTimer.current = null;
+            }
+        }
+
+        if (data.gesture === 'peace') {
+            // Toggle auto-tour on peace sign
+            toggleAutoTour();
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black" style={{ fontFamily: 'Orbitron, sans-serif' }}>
             {/* Title Banner */}
@@ -819,20 +902,6 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                 </h2>
                 <p className="text-gray-400 text-sm mt-1">{project.title}</p>
             </motion.div>
-
-            {/* Auto-Tour Button */}
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleAutoTour}
-                className={`absolute top-32 left-6 z-50 px-6 py-3 backdrop-blur-md border rounded-xl font-semibold transition-all flex items-center gap-2 ${autoTourActive
-                    ? 'bg-orange-500/30 border-orange-400/60 text-orange-300'
-                    : 'bg-[rgba(10,10,10,0.8)] border-[rgba(255,69,0,0.4)] text-gray-300'
-                    }`}
-            >
-                {autoTourActive ? <Pause size={20} /> : <PlayCircle size={20} />}
-                {autoTourActive ? 'Stop Auto-Tour' : 'Start Auto-Tour'}
-            </motion.button>
 
             {/* Instructions Panel */}
             {showInstructions && !autoTourActive && (
@@ -894,6 +963,18 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                 >
                     {showInstructions ? 'Hide' : 'Show'} Controls
                 </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleGestureControl}
+                    className={`px-6 py-3 backdrop-blur-md border rounded-xl font-semibold transition-all flex items-center gap-2 ${gestureControlEnabled
+                        ? 'bg-purple-500/30 border-purple-400/60 text-purple-300'
+                        : 'bg-[rgba(10,10,10,0.8)] border-[rgba(192,69,192,0.4)] text-gray-300'
+                        }`}
+                >
+                    <Hand size={20} />
+                    {gestureControlEnabled ? 'Hand Control ON' : 'Hand Control'}
+                </motion.button>
             </div>
 
             {/* 3D Canvas */}
@@ -947,8 +1028,10 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                     ) : (
                         <>
                             <OrbitControls
-                                enablePan={true}
-                                enableZoom={true}
+                                ref={orbitControlsRef}
+                                enablePan={!gestureControlEnabled}
+                                enableZoom={!gestureControlEnabled}
+                                enableRotate={!gestureControlEnabled}
                                 minDistance={3}
                                 maxDistance={20}
                                 maxPolarAngle={Math.PI / 1.8}
@@ -957,7 +1040,8 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                                 enableDamping={true}
                                 dampingFactor={0.05}
                             />
-                            <CameraController enabled={!autoTourActive} />
+                            <CameraController enabled={!autoTourActive && !gestureControlEnabled} />
+                            {gestureControlEnabled && <GestureCamera gestureData={gestureData} />}
                         </>
                     )}
 
@@ -966,24 +1050,32 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
             </Canvas>
 
             {/* Hidden YouTube Audio Player for Weblancer Tech Auto-Tour */}
-            {project.title === 'Weblancer Tech' && (
-                <iframe
-                    ref={audioRef}
-                    style={{
-                        display: 'none',
-                        position: 'fixed',
-                        bottom: '-100px',
-                        left: '-100px',
-                        width: '1px',
-                        height: '1px',
-                        border: 'none',
-                        pointerEvents: 'none'
-                    }}
-                    src={`https://www.youtube.com/embed/N76txbrkDhE?autoplay=${autoTourActive ? '1' : '0'}&loop=1&playlist=N76txbrkDhE&controls=0&showinfo=0&modestbranding=1&rel=0`}
-                    allow="autoplay; encrypted-media"
-                    title="Background Music"
-                />
-            )}
-        </div>
+            {
+                project.title === 'Weblancer Tech' && (
+                    <iframe
+                        ref={audioRef}
+                        style={{
+                            display: 'none',
+                            position: 'fixed',
+                            bottom: '-100px',
+                            left: '-100px',
+                            width: '1px',
+                            height: '1px',
+                            border: 'none',
+                            pointerEvents: 'none'
+                        }}
+                        src={`https://www.youtube.com/embed/N76txbrkDhE?autoplay=${autoTourActive ? '1' : '0'}&loop=1&playlist=N76txbrkDhE&controls=0&showinfo=0&modestbranding=1&rel=0`}
+                        allow="autoplay; encrypted-media"
+                        title="Background Music"
+                    />
+                )
+            }
+
+            {/* Hand Gesture Controller */}
+            <HandGestureController
+                enabled={gestureControlEnabled}
+                onGestureChange={handleGestureChange}
+            />
+        </div >
     );
 };
