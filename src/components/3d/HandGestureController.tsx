@@ -20,7 +20,10 @@ export const HandGestureController: React.FC<HandGestureControllerProps> = ({
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const handsRef = useRef<Hands | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const [isReady, setIsReady] = useState(false);
+    const [permissionError, setPermissionError] = useState<string | null>(null);
+    const [isRequesting, setIsRequesting] = useState(false);
     const [detectedGesture, setDetectedGesture] = useState<string>('None');
     const lastHandPosition = useRef({ x: 0, y: 0, z: 0 });
     const gestureData = useRef<GestureData>({
@@ -234,14 +237,22 @@ export const HandGestureController: React.FC<HandGestureControllerProps> = ({
 
     // Initialize MediaPipe Hands
     useEffect(() => {
-        if (!enabled || !videoRef.current) return;
+        if (!enabled) return;
 
         let animationFrameId: number;
         let lastFrameTime = 0;
         const frameInterval = 1000 / 30; // 30 FPS cap
 
         const initHands = async () => {
+            setIsRequesting(true);
+            setPermissionError(null);
+
             try {
+                // Check if mediaDevices is available (requires HTTPS in production)
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera access requires HTTPS. Please use a secure connection.');
+                }
+
                 const hands = new Hands({
                     locateFile: (file) => {
                         return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -262,32 +273,75 @@ export const HandGestureController: React.FC<HandGestureControllerProps> = ({
                 if (videoRef.current) {
                     const video = videoRef.current;
 
-                    // Request camera access
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: { width: 320, height: 240 }
-                    });
+                    try {
+                        // Request camera access with explicit constraints
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                width: { ideal: 320 },
+                                height: { ideal: 240 },
+                                facingMode: 'user'
+                            },
+                            audio: false
+                        });
 
-                    video.srcObject = stream;
-                    await video.play();
-                    setIsReady(true);
+                        streamRef.current = stream;
+                        video.srcObject = stream;
 
-                    // Custom animation loop
-                    const processFrame = async () => {
-                        if (!enabled || !video || !handsRef.current) return;
+                        // Wait for video to be ready
+                        await new Promise<void>((resolve, reject) => {
+                            video.onloadedmetadata = () => {
+                                video.play()
+                                    .then(() => resolve())
+                                    .catch(reject);
+                            };
+                            video.onerror = () => reject(new Error('Video failed to load'));
+                        });
 
-                        const now = Date.now();
-                        if (now - lastFrameTime >= frameInterval) {
-                            lastFrameTime = now;
-                            await handsRef.current.send({ image: video });
+                        setIsReady(true);
+                        setIsRequesting(false);
+
+                        // Custom animation loop
+                        const processFrame = async () => {
+                            if (!enabled || !video || !handsRef.current) return;
+
+                            const now = Date.now();
+                            if (now - lastFrameTime >= frameInterval) {
+                                lastFrameTime = now;
+                                try {
+                                    await handsRef.current.send({ image: video });
+                                } catch (e) {
+                                    console.warn('Frame processing error:', e);
+                                }
+                            }
+
+                            animationFrameId = requestAnimationFrame(processFrame);
+                        };
+
+                        processFrame();
+                    } catch (err: any) {
+                        console.error('Camera permission error:', err);
+                        let errorMessage = 'Camera access denied';
+
+                        if (err.name === 'NotAllowedError') {
+                            errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.';
+                        } else if (err.name === 'NotFoundError') {
+                            errorMessage = 'No camera found. Please connect a camera.';
+                        } else if (err.name === 'NotReadableError') {
+                            errorMessage = 'Camera is in use by another application.';
+                        } else if (err.name === 'OverconstrainedError') {
+                            errorMessage = 'Camera does not meet requirements.';
+                        } else if (err.message) {
+                            errorMessage = err.message;
                         }
 
-                        animationFrameId = requestAnimationFrame(processFrame);
-                    };
-
-                    processFrame();
+                        setPermissionError(errorMessage);
+                        setIsRequesting(false);
+                    }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error initializing hand tracking:', error);
+                setPermissionError(error.message || 'Failed to initialize AI model');
+                setIsRequesting(false);
             }
         };
 
@@ -300,10 +354,11 @@ export const HandGestureController: React.FC<HandGestureControllerProps> = ({
             if (handsRef.current) {
                 handsRef.current.close();
             }
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
             }
+            setIsReady(false);
         };
     }, [enabled, onResults]);
 
@@ -311,42 +366,72 @@ export const HandGestureController: React.FC<HandGestureControllerProps> = ({
 
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-4 items-end">
-            {/* Gesture Instructions Overlay */}
-            <div className="bg-black/80 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 text-white text-xs font-mono w-64 shadow-xl">
-                <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-                    GESTURE COMMANDS
-                </h4>
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <span>🖐️ Open Palm</span>
-                        <span className="text-gray-400">Rotate Model</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span>🤏 Pinch</span>
-                        <span className="text-gray-400">Zoom In/Out</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span>👉 Point</span>
-                        <span className="text-gray-400">Pan Camera</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span>✌️ Peace Sign</span>
-                        <span className="text-gray-400">Auto-Tour</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span>✊ Fist</span>
-                        <span className="text-gray-400">Reset View</span>
+            {/* Permission Error / Request UI */}
+            {!isReady && (
+                <div className="bg-black/90 backdrop-blur-md border border-red-500/50 rounded-xl p-6 text-center shadow-2xl max-w-xs">
+                    {permissionError ? (
+                        <>
+                            <div className="text-red-500 font-bold mb-2">⚠️ Camera Access Failed</div>
+                            <p className="text-gray-400 text-xs mb-4">{permissionError}</p>
+                            <p className="text-gray-500 text-xs mb-4">
+                                Note: Camera requires HTTPS in production environments.
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-red-500/20 hover:bg-red-500/40 text-red-300 px-4 py-2 rounded-lg text-sm transition-all border border-red-500/50"
+                            >
+                                Retry
+                            </button>
+                        </>
+                    ) : isRequesting ? (
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-orange-400 text-sm font-bold">Initializing AI...</p>
+                            <p className="text-gray-500 text-xs">Please allow camera access when prompted</p>
+                        </div>
+                    ) : null}
+                </div>
+            )}
+
+            {/* Gesture Instructions Overlay - Only show when ready */}
+            {isReady && (
+                <div className="bg-black/80 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 text-white text-xs font-mono w-64 shadow-xl">
+                    <h4 className="text-orange-400 font-bold mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                        GESTURE COMMANDS
+                    </h4>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <span>🖐️ Open Palm</span>
+                            <span className="text-gray-400">Rotate Model</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>🤏 Pinch</span>
+                            <span className="text-gray-400">Zoom In/Out</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>👉 Point</span>
+                            <span className="text-gray-400">Pan Camera</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>✌️ Peace Sign</span>
+                            <span className="text-gray-400">Auto-Tour</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span>✊ Fist</span>
+                            <span className="text-gray-400">Reset View</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Camera preview with hand tracking overlay */}
-            <div className="relative group">
+            <div className={`relative group ${!isReady ? 'hidden' : ''}`}>
                 <video
                     ref={videoRef}
                     className="hidden"
                     playsInline
+                    muted
                 />
                 <canvas
                     ref={canvasRef}

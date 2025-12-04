@@ -963,6 +963,7 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                 >
                     {showInstructions ? 'Hide' : 'Show'} Controls
                 </motion.button>
+                {/* Hand Control Button - Temporarily Disabled
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -974,6 +975,28 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                 >
                     <Hand size={20} />
                     {gestureControlEnabled ? 'Hand Control ON' : 'Hand Control'}
+                </motion.button>
+                */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleAutoTour}
+                    className={`px-6 py-3 backdrop-blur-md border rounded-xl font-semibold transition-all flex items-center gap-2 ${autoTourActive
+                        ? 'bg-green-500/30 border-green-400/60 text-green-300'
+                        : 'bg-[rgba(10,10,10,0.8)] border-[rgba(0,192,100,0.4)] text-gray-300'
+                        }`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {autoTourActive ? (
+                            <>
+                                <rect x="6" y="4" width="4" height="16" />
+                                <rect x="14" y="4" width="4" height="16" />
+                            </>
+                        ) : (
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        )}
+                    </svg>
+                    {autoTourActive ? 'Stop Tour' : 'Auto Tour'}
                 </motion.button>
             </div>
 
@@ -1071,11 +1094,12 @@ export const Tech3DGalleryStandalone: React.FC<Tech3DGalleryStandaloneProps> = (
                 )
             }
 
-            {/* Hand Gesture Controller */}
+            {/* Hand Gesture Controller - Temporarily Disabled
             <HandGestureController
                 enabled={gestureControlEnabled}
                 onGestureChange={handleGestureChange}
             />
+            */}
         </div >
     );
 };
