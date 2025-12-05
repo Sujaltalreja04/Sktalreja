@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, MessageCircle, Sparkles, AlertTriangle } from 'lucide-react';
+// TEMPORARILY DISABLED - Gamification tracking
+// import { useGamification } from '../context/GamificationContext';
 
 // Rate limiting configuration
 const MAX_REQUESTS_PER_HOUR = 10; // Limit to prevent API bill explosion
@@ -35,6 +37,9 @@ const ChatBot = () => {
   const [rateLimitReached, setRateLimitReached] = useState(false);
   const [remainingRequests, setRemainingRequests] = useState(MAX_REQUESTS_PER_HOUR);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // TEMPORARILY DISABLED - Gamification tracking
+  // const { trackChatbotInteraction } = useGamification();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -147,6 +152,9 @@ const ChatBot = () => {
     setInputValue('');
     setIsLoading(true);
     setShowSuggestions(false);
+
+    // TEMPORARILY DISABLED - Track chatbot interaction for gamification
+    // trackChatbotInteraction();
 
     // Mark question as used
     if (messageText) {

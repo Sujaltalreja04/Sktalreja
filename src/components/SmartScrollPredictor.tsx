@@ -26,12 +26,18 @@ export const SmartScrollPredictor = () => {
     const [lastScrollY, setLastScrollY] = useState(0);
     const [sectionTimes, setSectionTimes] = useState<Record<string, number>>({});
 
-    // Track scroll behavior and predict next section
+    // Track scroll behavior and predict next section (optimized with throttling)
     useEffect(() => {
         let scrollTimer: NodeJS.Timeout;
         let sectionStartTime = Date.now();
+        let isThrottled = false;
 
         const handleScroll = () => {
+            // Throttle scroll events to max 10 times per second
+            if (isThrottled) return;
+            isThrottled = true;
+            setTimeout(() => { isThrottled = false; }, 100);
+
             const scrollY = window.scrollY;
             const velocity = scrollY - lastScrollY;
             setScrollVelocity(velocity);
@@ -96,7 +102,7 @@ export const SmartScrollPredictor = () => {
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => {
             window.removeEventListener('scroll', handleScroll);
             clearTimeout(scrollTimer);

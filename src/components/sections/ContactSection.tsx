@@ -3,11 +3,15 @@ import { motion } from 'framer-motion';
 import { useInView } from '../../hooks/useInView';
 import { Mail, Phone, MapPin, Send, Github, Linkedin } from 'lucide-react';
 import { useForm, ValidationError } from '@formspree/react';
+// TEMPORARILY DISABLED - Gamification tracking
+// import { useGamification } from '../../context/GamificationContext';
 
 export const ContactSection = () => {
   const [ref, isInView] = useInView();
   const [state, handleSubmit] = useForm("xdkpywrn");
-  
+  // TEMPORARILY DISABLED - Gamification tracking
+  // const { trackContactInitiated, trackSocialClick } = useGamification();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -112,7 +116,10 @@ export const ContactSection = () => {
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? 'visible' : 'hidden'}
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              // TEMPORARILY DISABLED - trackContactInitiated();
+              handleSubmit(e);
+            }}
             className="space-y-4 md:space-y-6 mb-8 md:mb-12"
           >
             <div className="grid md:grid-cols-2 gap-4 md:gap-6">
@@ -127,8 +134,8 @@ export const ContactSection = () => {
                   className="w-full backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg md:rounded-xl px-4 py-3 md:px-6 md:py-4 text-sm md:text-base text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[rgba(192,192,192,0.5)] transition-all"
                   style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}
                 />
-                <ValidationError 
-                  prefix="Name" 
+                <ValidationError
+                  prefix="Name"
                   field="name"
                   errors={state.errors}
                 />
@@ -145,8 +152,8 @@ export const ContactSection = () => {
                   className="w-full backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg md:rounded-xl px-4 py-3 md:px-6 md:py-4 text-sm md:text-base text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[rgba(192,192,192,0.5)] transition-all"
                   style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}
                 />
-                <ValidationError 
-                  prefix="Email" 
+                <ValidationError
+                  prefix="Email"
                   field="email"
                   errors={state.errors}
                 />
@@ -164,8 +171,8 @@ export const ContactSection = () => {
                 className="w-full backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg md:rounded-xl px-4 py-3 md:px-6 md:py-4 text-sm md:text-base text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[rgba(192,192,192,0.5)] transition-all"
                 style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}
               />
-              <ValidationError 
-                prefix="Subject" 
+              <ValidationError
+                prefix="Subject"
                 field="subject"
                 errors={state.errors}
               />
@@ -182,8 +189,8 @@ export const ContactSection = () => {
                 className="w-full backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.2)] rounded-lg md:rounded-xl px-4 py-3 md:px-6 md:py-4 text-sm md:text-base text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[rgba(192,192,192,0.5)] transition-all resize-none"
                 style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}
               />
-              <ValidationError 
-                prefix="Message" 
+              <ValidationError
+                prefix="Message"
                 field="message"
                 errors={state.errors}
               />
@@ -307,6 +314,7 @@ export const ContactSection = () => {
                 scale: 1.05,
                 boxShadow: '0 0 30px rgba(192, 192, 192, 0.3)',
               }}
+              onClick={() => {/* TEMPORARILY DISABLED - trackSocialClick() */ }}
             >
               <div
                 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center"
@@ -332,6 +340,7 @@ export const ContactSection = () => {
                 scale: 1.05,
                 boxShadow: '0 0 30px rgba(192, 192, 192, 0.3)',
               }}
+              onClick={() => {/* TEMPORARILY DISABLED - trackSocialClick() */ }}
             >
               <div
                 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center"

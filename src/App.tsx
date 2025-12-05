@@ -5,7 +5,17 @@ import ChatBot from './components/ChatBot';
 import { VoiceCommandHelper } from './components/VoiceCommandHelper';
 import { AIInsights } from './components/AIInsights';
 import { SmartScrollPredictor } from './components/SmartScrollPredictor';
-import { AdvancedScreenshotTool } from './components/AdvancedScreenshotTool';
+// TEMPORARILY DISABLED - Gamification & Screenshot Features
+// Uncomment below to re-enable
+// import { AdvancedScreenshotTool } from './components/AdvancedScreenshotTool';
+// import { GamificationProvider } from './context/GamificationContext';
+// import {
+//   AchievementPopup,
+//   AchievementsPanel,
+//   AchievementsButton,
+//   ExplorationProgress
+// } from './components/Gamification';
+// import { useScrollTracker, useKonamiCode, SectionTracker } from './hooks/useGamificationTracking';
 
 const Scene3D = lazy(() => import('./components/3d/Scene3D').then(module => ({ default: module.Scene3D })));
 const AboutSection = lazy(() => import('./components/sections/AboutSection').then(module => ({ default: module.AboutSection })));
@@ -17,11 +27,20 @@ const StorySection = lazy(() => import('./components/sections/StorySection').the
 const ContactSection = lazy(() => import('./components/sections/ContactSection').then(module => ({ default: module.ContactSection })));
 const PlanningBoardSection = lazy(() => import('./components/sections/PlanningBoardSection').then(module => ({ default: module.PlanningBoardSection })));
 
-function App() {
+// Inner app component
+function AppContent() {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // TEMPORARILY DISABLED - Gamification tracking
+  // useScrollTracker();
+  // useKonamiCode();
 
   return (
     <div ref={containerRef} className="relative min-h-screen bg-[#0a0a0a]">
+      {/* TEMPORARILY DISABLED - Gamification UI */}
+      {/* <ExplorationProgress /> */}
+      {/* <SectionTracker /> */}
+
       <Suspense fallback={null}>
         <Scene3D />
       </Suspense>
@@ -33,20 +52,36 @@ function App() {
       </div>
 
       <main className="relative z-10">
-        <HeroSection />
+        <section id="hero">
+          <HeroSection />
+        </section>
         <Suspense fallback={
           <div className="min-h-screen flex items-center justify-center">
             <div className="animate-pulse text-gray-400">Loading...</div>
           </div>
         }>
-          <AboutSection />
-          <StorySection />
-          <ProjectsSection />
-          <SkillsSection />
-          <AchievementsSection />
-          <PlanningBoardSection />
+          <section id="about">
+            <AboutSection />
+          </section>
+          <section id="story">
+            <StorySection />
+          </section>
+          <section id="projects">
+            <ProjectsSection />
+          </section>
+          <section id="skills">
+            <SkillsSection />
+          </section>
+          <section id="achievements">
+            <AchievementsSection />
+          </section>
+          <section id="planning">
+            <PlanningBoardSection />
+          </section>
           {/* <BlogsSection /> */}
-          <ContactSection />
+          <section id="contact">
+            <ContactSection />
+          </section>
         </Suspense>
       </main>
 
@@ -54,7 +89,13 @@ function App() {
       <ChatBot />
       <VoiceCommandHelper />
       <SmartScrollPredictor />
-      <AdvancedScreenshotTool />
+      {/* TEMPORARILY DISABLED - Screenshot Tool */}
+      {/* <AdvancedScreenshotTool /> */}
+
+      {/* TEMPORARILY DISABLED - Gamification UI */}
+      {/* <AchievementPopup /> */}
+      {/* <AchievementsPanel /> */}
+      {/* <AchievementsButton /> */}
 
       <footer className="relative z-10 py-6 md:py-8 text-center text-gray-500 border-t border-gray-800">
         <div className="container mx-auto px-4 sm:px-6">
@@ -64,6 +105,15 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    // TEMPORARILY DISABLED - Gamification Provider
+    // <GamificationProvider>
+    <AppContent />
+    // </GamificationProvider>
   );
 }
 
