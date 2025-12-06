@@ -123,7 +123,7 @@ export const AchievementsSection = () => {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const { scrollY } = useViewportScroll();
   const { isSmallScreen } = useResponsive();
-  
+
   // Parallax effect for background elements
   const parallaxY = useTransform(scrollY, [0, 1000], [0, -100]);
 
@@ -218,7 +218,7 @@ export const AchievementsSection = () => {
               Achievement Badges
               <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/30 to-transparent"></div>
             </h3>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8">
               {badgeData.map((badge) => (
                 <motion.div
@@ -240,7 +240,7 @@ export const AchievementsSection = () => {
                 </motion.div>
               ))}
             </div>
-            
+
             <div className="text-center">
               <p className="text-gray-400 max-w-2xl mx-auto">
                 These badges represent key skills and accomplishments throughout my career. Hover over each badge to see details.
@@ -256,14 +256,14 @@ export const AchievementsSection = () => {
                 Achievements
                 <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/30 to-transparent"></div>
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {achievements.map((achievement) => {
                   const Icon = achievement.icon;
                   const isFlipped = flippedCards.includes(achievement.id);
-                  
+
                   return (
-                    <div 
+                    <div
                       key={achievement.id}
                       className="relative h-72"
                       style={{ perspective: '1000px' }}
@@ -301,15 +301,14 @@ export const AchievementsSection = () => {
                           <p className="text-gray-200 text-base mb-4 font-medium">{achievement.description}</p>
                           {achievement.highlight && (
                             <div className="mt-4">
-                              <span className={`inline-block text-sm px-3 py-1.5 rounded-full font-semibold ${
-                                achievement.highlight === 'top-2' 
-                                  ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30' 
-                                  : achievement.highlight === 'top-5'
+                              <span className={`inline-block text-sm px-3 py-1.5 rounded-full font-semibold ${achievement.highlight === 'top-2'
+                                ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30'
+                                : achievement.highlight === 'top-5'
                                   ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30'
                                   : 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-300 border border-purple-400/30'
-                              }`}>
-                                {achievement.highlight === 'top-2' ? '2nd Place' : 
-                                 achievement.highlight === 'top-5' ? 'Top 5' : 'Top 15'}
+                                }`}>
+                                {achievement.highlight === 'top-2' ? '2nd Place' :
+                                  achievement.highlight === 'top-5' ? 'Top 5' : 'Top 15'}
                               </span>
                             </div>
                           )}
@@ -332,9 +331,9 @@ export const AchievementsSection = () => {
                             <>
                               <h4 className="text-xl font-bold text-gray-100 mb-4">{achievement.title}</h4>
                               <div className="h-40 rounded-lg overflow-hidden">
-                                <img 
-                                  src={achievement.image} 
-                                  alt={achievement.title} 
+                                <img
+                                  src={achievement.image}
+                                  alt={achievement.title}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -366,17 +365,17 @@ export const AchievementsSection = () => {
                 Hackathons
                 <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/30 to-transparent"></div>
               </h3>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {hackathons.map((hackathon) => {
                   const Icon = hackathon.icon;
-                  
+
                   // Check if this is the Odoo hackathon that should have flip functionality
                   if (hackathon.id === 1) {
                     const isFlipped = flippedCards.includes(hackathon.id);
-                    
+
                     return (
-                      <div 
+                      <div
                         key={hackathon.id}
                         className="relative h-88"
                         style={{ perspective: '1000px' }}
@@ -414,9 +413,9 @@ export const AchievementsSection = () => {
                             <p className="text-gray-200 text-base mb-4 font-medium">{hackathon.project}</p>
                             {hackathon.image && (
                               <div className="mb-4 rounded-lg overflow-hidden">
-                                <img 
-                                  src={hackathon.image} 
-                                  alt={hackathon.name} 
+                                <img
+                                  src={hackathon.image}
+                                  alt={hackathon.name}
                                   className="w-full h-32 object-cover"
                                 />
                               </div>
@@ -426,11 +425,10 @@ export const AchievementsSection = () => {
                                 <Users className="text-gray-500" size={16} />
                                 {hackathon.participants}
                               </p>
-                              <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${
-                                hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd') 
-                                  ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30' 
-                                  : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
-                              }`}>
+                              <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd')
+                                ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30'
+                                : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
+                                }`}>
                                 {hackathon.position}
                               </span>
                             </div>
@@ -451,7 +449,7 @@ export const AchievementsSection = () => {
                           >
                             <h4 className="text-xl font-bold text-gray-100 mb-2">{hackathon.name}</h4>
                             <p className="text-gray-400 text-sm mb-4">{hackathon.description}</p>
-                            
+
                             <div className="mb-4">
                               <h5 className="text-lg font-semibold text-gray-200 mb-2">Tech Stack</h5>
                               <div className="flex flex-wrap gap-2">
@@ -465,21 +463,20 @@ export const AchievementsSection = () => {
                                 ))}
                               </div>
                             </div>
-                            
+
                             <div className="flex justify-between items-center mt-4 pt-4 border-t border-[rgba(192,192,192,0.2)]">
                               <p className="text-gray-400 text-sm flex items-center gap-1">
                                 <Users className="text-gray-500" size={16} />
                                 {hackathon.participants}
                               </p>
-                              <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${
-                                hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd') 
-                                  ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30' 
-                                  : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
-                              }`}>
+                              <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd')
+                                ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30'
+                                : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
+                                }`}>
                                 {hackathon.position}
                               </span>
                             </div>
-                            
+
                             <div className="absolute bottom-4 right-4 text-gray-500 text-xs">
                               Click to flip back
                             </div>
@@ -513,9 +510,9 @@ export const AchievementsSection = () => {
                         <p className="text-gray-200 text-base mb-4 font-medium">{hackathon.project}</p>
                         {hackathon.image && (
                           <div className="mb-4 rounded-lg overflow-hidden">
-                            <img 
-                              src={hackathon.image} 
-                              alt={hackathon.name} 
+                            <img
+                              src={hackathon.image}
+                              alt={hackathon.name}
                               className="w-full h-32 object-cover"
                             />
                           </div>
@@ -525,11 +522,10 @@ export const AchievementsSection = () => {
                             <Users className="text-gray-500" size={16} />
                             {hackathon.participants}
                           </p>
-                          <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${
-                            hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd') 
-                              ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30' 
-                              : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
-                          }`}>
+                          <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${hackathon.position.includes('Top') || hackathon.position.includes('1st') || hackathon.position.includes('2nd')
+                            ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-300 border border-yellow-400/30'
+                            : 'bg-[rgba(192,192,192,0.1)] text-gray-300'
+                            }`}>
                             {hackathon.position}
                           </span>
                         </div>
@@ -546,7 +542,7 @@ export const AchievementsSection = () => {
                 <FileText className="text-gray-400" />
                 Certifications
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {certifications.map((cert) => {
                   return (
@@ -569,9 +565,9 @@ export const AchievementsSection = () => {
                       <p className="text-gray-300 text-sm mb-3">Credential ID: {cert.credential}</p>
                       {cert.image && (
                         <div className="mb-3 rounded-lg overflow-hidden">
-                          <img 
-                            src={cert.image} 
-                            alt={cert.name} 
+                          <img
+                            src={cert.image}
+                            alt={cert.name}
                             className="w-full h-32 object-cover"
                           />
                         </div>
@@ -595,8 +591,93 @@ export const AchievementsSection = () => {
                 })}
               </div>
             </motion.div>
+
+            {/* GitHub Contributions Section */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-gray-100 flex items-center gap-3" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+                <svg className="w-7 h-7 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                </svg>
+                GitHub Contributions
+                <div className="h-px flex-1 bg-gradient-to-r from-gray-400/30 to-transparent"></div>
+              </h3>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {[
+        {
+          year: "2023",
+          image: "https://raw.githubusercontent.com/Sujaltalreja04/Sujaltalreja04/refs/heads/main/Screenshot%202025-12-06%20154216.png",
+          description: "Building the foundation"
+        },
+        {
+          year: "2024",
+          image: "https://raw.githubusercontent.com/Sujaltalreja04/Sujaltalreja04/refs/heads/main/Screenshot%202025-12-06%20154204.png",
+          description: "Consistent growth & learning"
+        },
+        {
+          year: "2025",
+          image: "https://raw.githubusercontent.com/Sujaltalreja04/Sujaltalreja04/refs/heads/main/Screenshot%202025-12-06%20154148.png",
+          description: "Pushing boundaries"
+        }
+      ].map((contribution) => (
+        <motion.div
+          key={contribution.year}
+          className="backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.3)] rounded-2xl p-6 overflow-hidden"
+          whileHover={{
+            scale: isSmallScreen ? 1 : 1.03,
+            boxShadow: '0 0 30px rgba(192, 192, 192, 0.4)',
+            y: -5
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-2xl font-bold bg-gradient-to-r from-gray-200 via-gray-100 to-gray-300 bg-clip-text text-transparent" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+              {contribution.year}
+            </h4>
+            <span className="text-sm bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border border-green-400/30 px-3 py-1.5 rounded-full font-semibold">
+              Active
+            </span>
           </div>
+
+          <p className="text-gray-400 text-sm mb-4">{contribution.description}</p>
+
+          <div className="rounded-lg overflow-hidden bg-[rgba(0,0,0,0.3)] p-3">
+            <img
+              src={contribution.image}
+              alt={`GitHub contributions ${contribution.year}`}
+              className="w-full h-auto object-contain rounded"
+              loading="lazy"
+            />
+          </div>
+
+          <motion.a
+            href="https://github.com/Sujaltalreja04"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 w-full backdrop-blur-md bg-[rgba(192,192,192,0.1)] border border-[rgba(192,192,192,0.3)] rounded-lg px-4 py-2.5 text-gray-300 font-semibold flex items-center justify-center gap-2 text-sm"
+            whileHover={{
+              scale: 1.05,
+              boxShadow: '0 0 20px rgba(192, 192, 192, 0.4)',
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+            </svg>
+            VIEW ON GITHUB
+          </motion.a>
         </motion.div>
+      ))}
+    </div>
+
+    <div className="mt-6 text-center">
+      <p className="text-gray-400 max-w-3xl mx-auto">
+        My GitHub contribution graph showcases consistent dedication to coding and open-source development. Each green square represents commits, pull requests, and contributions to various projects.
+      </p>
+    </div>
+  </motion.div>
+      </div>
+    </motion.div>
       </div>
     </section>
   );
