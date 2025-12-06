@@ -7,7 +7,24 @@ import { ChevronDown, Mic, MicOff } from 'lucide-react';
 export const HeroSection = () => {
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const recognitionRef = useRef<any>(null);
+
+  // Handle PWA installation
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
   
   const scrollToNext = () => {
     const aboutSection = document.getElementById('about');
@@ -306,6 +323,37 @@ export const HeroSection = () => {
                 <span>VOICE MODE</span>
               </motion.button>
             )}
+
+            {/* PWA Install Button */}
+            <motion.button
+              onClick={async () => {
+                if (deferredPrompt) {
+                  // Show the install prompt
+                  deferredPrompt.prompt();
+                  // Wait for the user to respond to the prompt
+                  const { outcome } = await deferredPrompt.userChoice;
+                  // We've used the prompt, and can't use it again, throw it away
+                  setDeferredPrompt(null);
+                } else {
+                  // Fallback: Show instructions for manual installation
+                  alert('To install this app, use the browser menu:\n\n1. Open browser menu (⋮ or ⋯)\n2. Look for "Install App" or "Add to Home Screen"\n3. Follow the prompts to install');
+                }
+              }}
+              className="px-6 sm:px-8 py-3 sm:py-4 backdrop-blur-md bg-[rgba(26,26,26,0.7)] border border-[rgba(192,192,192,0.3)] rounded-xl text-gray-300 font-semibold transition-all text-sm sm:text-base flex items-center justify-center gap-2"
+              style={{ fontFamily: 'Orbitron, sans-serif' }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: '0 0 30px rgba(192, 192, 192, 0.4)',
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v12"/>
+                <path d="m8 11 4 4 4-4"/>
+                <path d="M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/>
+              </svg>
+              <span>INSTALL APP</span>
+            </motion.button>
           </motion.div>
         </motion.div>
 

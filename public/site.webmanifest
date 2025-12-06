@@ -1,7 +1,7 @@
 {
   "name": "Sujal Talreja - AI Portfolio",
-  "short_name": "Sujal Talreja",
-  "description": "AI Engineer Portfolio - Machine Learning & Data Analysis Projects",
+  "short_name": "Sujal Portfolio",
+  "description": "AI Engineer & Full-Stack Developer Portfolio showcasing innovative projects and achievements",
   "icons": [
     {
       "src": "/favicon-96x96.png",
@@ -22,8 +22,13 @@
       "purpose": "any maskable"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
+  "theme_color": "#1a1a1a",
+  "background_color": "#0a0a0a",
   "display": "standalone",
-  "start_url": "/"
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["portfolio", "developer", "technology", "ai", "machine-learning"]
 }

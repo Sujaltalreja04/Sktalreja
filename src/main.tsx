@@ -9,6 +9,19 @@ const Main = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Register service worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
     // Always show loading screen in development
     // In production, check if loading screen was already shown (in this session)
     const isDevelopment = import.meta.env.DEV;
